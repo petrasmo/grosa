@@ -1,0 +1,109 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\homePC\\UltraBike\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\homePC\\UltraBike\\src\\Controller\\DefaultController.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Controller\\DefaultController.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\homePC\\UltraBike\\templates\\base.html.twig||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:templates\\base.html.twig||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\homePC\\UltraBike\\assets\\styles\\app.css||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:assets\\styles\\app.css||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\homePC\\UltraBike\\templates\\uBikeAdmin\\admin.html.twig||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:templates\\uBikeAdmin\\admin.html.twig||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\homePC\\UltraBike\\assets\\bootstrap.js||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:assets\\bootstrap.js||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "bootstrap.js",
+              "DocumentMoniker": "C:\\Users\\homePC\\UltraBike\\assets\\bootstrap.js",
+              "RelativeDocumentMoniker": "assets\\bootstrap.js",
+              "ToolTip": "C:\\Users\\homePC\\UltraBike\\assets\\bootstrap.js",
+              "RelativeToolTip": "assets\\bootstrap.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T11:31:21.348Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "app.css",
+              "DocumentMoniker": "C:\\Users\\homePC\\UltraBike\\assets\\styles\\app.css",
+              "RelativeDocumentMoniker": "assets\\styles\\app.css",
+              "ToolTip": "C:\\Users\\homePC\\UltraBike\\assets\\styles\\app.css",
+              "RelativeToolTip": "assets\\styles\\app.css",
+              "ViewState": "AgIAAHgAAAAAAAAAAAAcwI4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2025-02-10T10:18:03.57Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "base.html.twig",
+              "DocumentMoniker": "C:\\Users\\homePC\\UltraBike\\templates\\base.html.twig",
+              "RelativeDocumentMoniker": "templates\\base.html.twig",
+              "ToolTip": "C:\\Users\\homePC\\UltraBike\\templates\\base.html.twig",
+              "RelativeToolTip": "templates\\base.html.twig",
+              "ViewState": "AgIAANMAAAAAAAAAAAAkwOAAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-02-10T09:44:39.658Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "admin.html.twig",
+              "DocumentMoniker": "C:\\Users\\homePC\\UltraBike\\templates\\uBikeAdmin\\admin.html.twig",
+              "RelativeDocumentMoniker": "templates\\uBikeAdmin\\admin.html.twig",
+              "ToolTip": "C:\\Users\\homePC\\UltraBike\\templates\\uBikeAdmin\\admin.html.twig",
+              "RelativeToolTip": "templates\\uBikeAdmin\\admin.html.twig",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-02-10T09:41:50.197Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DefaultController.php",
+              "DocumentMoniker": "C:\\Users\\homePC\\UltraBike\\src\\Controller\\DefaultController.php",
+              "RelativeDocumentMoniker": "src\\Controller\\DefaultController.php",
+              "ToolTip": "C:\\Users\\homePC\\UltraBike\\src\\Controller\\DefaultController.php",
+              "RelativeToolTip": "src\\Controller\\DefaultController.php",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-02-10T09:40:08.974Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

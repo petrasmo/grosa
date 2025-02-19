@@ -1,0 +1,31 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'bcrypt'
+
+    providers:
+        users_in_memory:
+            memory:
+                users:
+                    user:
+                        password: '$2y$13$JrPDBgHDZpiBrdxJo9xqp.L621xAG23fdkMM0DUCf/sqC78ayf5PK'  # BŪTINAI turi būti bcrypt hash, ne tiesiog tekstas!
+                        roles: ['ROLE_USER']
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:  # Pašaliname `app_login`, nes loginas turi būti tvarkomas šiame firewall'e
+            lazy: true
+            provider: users_in_memory
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: /kainynas
+            logout:
+                path: app_logout
+                target: /login
+
+    access_control:
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/.*, roles: ROLE_USER }
