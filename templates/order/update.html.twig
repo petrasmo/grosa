@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Kurti naują užsakymą{% endblock %}
+
+{% block body %}
+    <h1>Kurti naują užsakymą</h1>
+    <p>Čia bus užsakymo kūrimo forma.</p>
+    <div data-controller="order-form">
+    <button data-action="click->order-form#toggle" class="btn btn-primary">
+        Pridėti naują užsakymą
+    </button>
+
+    <div data-order-form-target="form"
+         class="d-none bg-white border rounded p-2 shadow p-3"
+         style="width: 200px;">
+        <p>Ar norite pridėti naują užsakymą?</p>
+        <button class="btn btn-success">Taip</button>
+        <button class="btn btn-danger">Ne</button>
+    </div>
+</div>
+{% endblock %}

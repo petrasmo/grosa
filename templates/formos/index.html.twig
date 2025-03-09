@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Formų konfigūravimas{% endblock %}
+
+{% block body %}
+<div data-controller="atributai">
+    <div class="mb-3 p-3 bg-light border rounded">
+        <label for="gaminys_tipas" class="form-label fw-bold text-secondary">Gaminys (tipas)</label>
+        <select id="gaminys_tipas" class="form-control fw-bold"
+                name="gaminys_tipas"
+                data-atributai-target="select"
+                data-action="change->atributai#loadAttributes">
+            <option value="">-- Pasirinkite gaminį --</option>
+            {% for gaminys in gaminiai %}
+                <option value="{{ gaminys.id }}">{{ gaminys.text }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <div id="table-container" class="d-none" data-atributai-target="tableContainer">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Atributas</th>
+                    <th scope="col">Tipas</th>
+                    <th scope="col">Pasirinkti</th>
+                </tr>
+            </thead>
+            <tbody data-atributai-target="tableBody">
+                <!-- Čia bus dinamiškai įkelti duomenys -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="alert-container" class="alert d-none" role="alert"></div>
+
+    <button type="button" class="btn btn-primary mt-3"
+            data-action="click->atributai#saveAttributes">
+        Išsaugoti
+    </button>
+</div>
+{% endblock %}

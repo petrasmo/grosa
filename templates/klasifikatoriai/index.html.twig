@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pjovimo sistemos klasifikatorius{% endblock %}
+
+{% block body %}
+    <h1>Pjovimo sistemos klasifikatorius</h1>
+<label for="filter-ilgis">Ilgis:</label>
+<select id="filter-ilgis">
+    <option value="">Visi</option>
+    {% for ilgis in filters.ilgis %}
+        <option value="{{ ilgis }}">{{ ilgis }}</option>
+    {% endfor %}
+</select>
+
+<label for="filter-plotis">Plotis:</label>
+<select id="filter-plotis">
+    <option value="">Visi</option>
+    {% for plotis in filters.plotis %}
+        <option value="{{ plotis }}">{{ plotis }}</option>
+    {% endfor %}
+</select>
+
+<label for="filter-storis">Storis:</label>
+<select id="filter-storis">
+    <option value="">Visi</option>
+    {% for storis in filters.storis %}
+        <option value="{{ storis }}">{{ storis }}</option>
+    {% endfor %}
+</select>
+
+<table id="klasifikatorius-table" class="table table-striped display">
+    <thead>
+        <tr>
+            <th>Kodas</th>
+            <th>Spalva</th>
+            <th>Ilgis</th>
+            <th>Plotis</th>
+            <th>Storis</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+            <tr>
+                <td>{{ row.kodas }}</td>
+                <td>{{ row.spalva_pavadinimas }}</td>
+                <td>{{ row.ilgis }}</td>
+                <td>{{ row.plotis }}</td>
+                <td>{{ row.storis }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+    
+    <script>
+    $(document).ready(function() {
+        var table = $('#klasifikatorius-table').DataTable({
+            "paging": false,   // Išjungia puslapiavimą
+            "searching": true, // Palieka paiešką
+            "info": false     // Paslepia „Showing X of Y entries“       
+        });
+
+        if (!table) {
+            console.error("DataTable nerastas!");
+            return;
+        }
+
+        // Bendra paieška pagal kodą ir spalvą
+        $('#search').on('keyup', function() {
+            table.search(this.value).draw();
+        });
+
+        // Filtruoti pagal ilgį
+        $('#filter-ilgis').on('change', function() {
+            table.column(2).search(this.value).draw();
+        });
+
+        // Filtruoti pagal plotį
+        $('#filter-plotis').on('change', function() {
+            table.column(3).search(this.value).draw();
+        });
+
+        // Filtruoti pagal storį
+        $('#filter-storis').on('change', function() {
+            table.column(4).search(this.value).draw();
+        });
+
+        // Pasirinkimas iš lentelės
+        table.on('click', 'tbody tr', function(e) {
+            let classList = e.currentTarget.classList;
+            if (classList.contains('selected')) {
+                classList.remove('selected');
+            } else {
+                table.rows('.selected').nodes().each((row) => row.classList.remove('selected'));
+                classList.add('selected');
+            }
+        });
+    });
+    </script>
+{% endblock %}

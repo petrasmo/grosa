@@ -1,4 +1,8 @@
 import './bootstrap.js';
+//import { startStimulusApp } from '@symfony/stimulus-bundle';
+console.log('🚀 Stimulus programa startuoja!');
+//const app = startStimulusApp();
+
 /*
  * Welcome to your app's main JavaScript file!
  *
@@ -7,6 +11,6 @@ import './bootstrap.js';
  */
 import './styles/app.css';
 
+//import "./controllers/order_form_controller.js";
+
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
-
-
