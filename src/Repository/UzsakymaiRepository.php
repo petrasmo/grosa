@@ -49,11 +49,14 @@ class UzsakymaiRepository
         // Gauk vartotoją iš saugumo komponento
         $gaminysId = $data['gaminys_id'];
         $user = $this->security->getUser();
+
+        /** @var \App\Entity\User|null $user */
         if (!$user) {
             throw new AuthenticationException("Vartotojas neprisijungęs.");
         }
-
-        $userId = $user->getId(); // Assuming User entity has a getId() method
+        
+        $userId = $user->getId(); // Dabar klaidos nebebus
+        
 
        
 

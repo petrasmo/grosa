@@ -40,14 +40,15 @@ class UzsakymaiController extends AbstractController
 
         return $this->render('uzsakymai/redaguoti.html.twig', [
             'gaminiai' => $gaminiai, 
+            'minWidth' => '',
+            'maxWidth' => '',
         ]);
     }
 
     #[Route('/gaminio-tipai/{gamId}', name: 'gaminio_tipai', methods: ['GET'])]
     public function getGaminioTipai(int $gamId, Connection $connection): JsonResponse
     {
-      //aaaaafdg df gdfg dfg 
-        $sql = "SELECT a.id AS id, a.name AS text 
+        $sql = "SELECT a.id AS id, a.name AS text, a.min_width, a.max_warranty_width 
                 FROM ord_roller_mechanism a
                 WHERE a.id_product = :gamId 
                 AND a.deleted <> 1 
@@ -56,7 +57,7 @@ class UzsakymaiController extends AbstractController
 
         $gaminioTipai = $connection->fetchAllAssociative($sql, ['gamId' => $gamId]);
 
-        return $this->json($gaminioTipai); 
+        return $this->json($gaminioTipai);
     }
 
     #[Route('/gaminio-spalvos/{mechanismId}', name: 'gaminio_spalvos', methods: ['GET'])]
@@ -74,7 +75,7 @@ class UzsakymaiController extends AbstractController
         return $this->json($spalvos);
     }
 
-    #[Route('/medziagos-paieska', name: 'medziagos_paieska', methods: ['GET'])]
+    #[Route('/uzsakymai/medziagos-paieska', name: 'medziagos_paieska', methods: ['GET'])]
     public function medziagosPaieska(Request $request, Connection $connection): JsonResponse
     {
         $query = $request->query->get('q', '');

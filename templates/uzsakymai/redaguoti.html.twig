@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<div data-controller="atributai">
+<div data-controller="atributai" data-max-width="{{ maxWidth }}">
     <!-- GAMINYS (Kai pasirenkama, dinamiškai keičia Gaminio tipą) -->
     <div class="mb-3 p-3 form-container">
         <label for="gam_id" class="form-label">Gaminys</label>
@@ -49,5 +49,65 @@
         </select>
         <div class="invalid-feedback">Pasirinkite medžiagą.</div>
     </div>
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="width" class="form-label">Gaminio plotis (mm)</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="width" required
+                   onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                   data-action="input->atributai#validateWidth">
+            <span class="input-group-text">mm</span>
+        </div>
+        <div id="width-error-message" class="invalid-feedback d-none"></div>
+    </div>
+
+    <div id="width-warning" class="d-none">
+        <label class="form-label">Maksimalus gaminio plotis: {{ maxWidth }} mm. Platesniam garantija nesuteikiama.</label>
+        <div>
+            <input type="radio" id="agree" name="width_agreement" value="agree">
+            <label for="agree">Sutinku</label>
+        </div>
+        <div>
+            <input type="radio" id="disagree" name="width_agreement" value="disagree">
+            <label for="disagree">Nesutinku</label>
+        </div>
+    </div>
 </div>
+
+
+    
+</div>
+
+<script>
+    showWidthWarning() {
+        document.getElementById("width-warning").classList.remove("d-none");
+    }
+
+    hideWidthWarning() {
+        document.getElementById("width-warning").classList.add("d-none");
+    }
+
+    validateWidth(event) {
+        const width = event.target.value;
+        const widthNumber = parseInt(width, 10);
+
+        // Jei plotis viršija max plotį, rodome pranešimą
+        if (widthNumber > this.maxWidth) {
+            this.showWidthWarning();
+        } else {
+            this.hideWidthWarning();
+        }
+
+        // Validacija pagal min ir max plotį
+        if (widthNumber < this.minWidth) {
+            this.showWidthError(`Plotis turi būti ne mažesnis nei ${this.minWidth} mm.`);
+        } else if (widthNumber > this.maxWidth) {
+            this.showWidthError(`Maksimalus plotis yra ${this.maxWidth} mm. Platesniam garantija nesuteikiama.`);
+        } else {
+            this.clearWidthError(); // Jei plotis teisingas, išvalome klaidą
+        }
+    }
+</script>
 {% endblock %}

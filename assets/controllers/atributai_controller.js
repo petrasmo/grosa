@@ -1,19 +1,40 @@
 import { Controller } from "@hotwired/stimulus";
-import TomSelect from "tom-select";
+
 
 export default class extends Controller {
     static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
         "colorSelect","materialSelect"];
    
     connect() {
-        if (this.element.dataset.initialized) {
-           // console.warn("⚠️ Atributai valdiklis jau buvo prijungtas!");
-            return;
-        }
-        this.element.dataset.initialized = "true";
-        this.initMaterialSelect();
-        //console.log("✅ Atributai valdiklis prijungtas!");
+    if (this.element.dataset.initialized) {
+        return;  // Jei jau buvo inicijuota, nutraukiame
     }
+
+    this.element.dataset.initialized = "true";  // Pažymime, kad buvo atlikta inicializacija
+
+    // Tikriname, ar selectTarget egzistuoja ir turi reikšmę
+    const gaminysId = this.hasSelectTarget ? this.selectTarget.value : null;
+
+    if (gaminysId) {
+        // Užklausa gauti gaminio tipo duomenis
+        fetch(`/gaminio-tipai/${gaminysId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Tikriname, ar duomenys gauti
+                if (data && data.length > 0) {
+                    this.minWidth = data[0].min_width;  // Gauti minimalų plotį
+                    this.maxWidth = data[0].max_warranty_width;  // Gauti maksimalų plotį
+                    console.log('Gauti duomenys:', data);
+                }
+            })
+            .catch(error => console.error("Klaida gaunant gaminio tipus:", error));
+    }
+
+    // Inicijuojame MaterialSelect tik jei jis yra
+    if (this.hasMaterialSelectTarget) {
+        this.initMaterialSelect();
+    }
+}
 
     async loadAttributes() {
         const gaminysId = this.selectTarget.value;
@@ -37,6 +58,8 @@ export default class extends Controller {
         const gamId = event.target.value;
         console.log("🔄 Pasirinktas gaminys ID:", gamId);
         if (!gamId) return;
+
+        this.clearFields();
     
         try {
             const response = await fetch(`/gaminio-tipai/${gamId}`);
@@ -61,6 +84,13 @@ export default class extends Controller {
                 option.textContent = item.text;
                 this.gamtipasSelectTarget.appendChild(option);
             });
+
+            this.minWidth = data[0].min_width;  // Assuming data[0] contains the correct values
+            this.maxWidth = data[0].max_warranty_width;
+    
+            console.log("❗ Minimalus plotis:", this.minWidth);
+            console.log("❗ Maksimalus plotis:", this.maxWidth);
+          
     
         } catch (error) {
             console.error("❌ Klaida kraunant gaminio tipus:", error);
@@ -71,6 +101,8 @@ export default class extends Controller {
         const mechanismId = event.target.value;
         console.log("🔄 Pasirinktas mechanizmas ID:", mechanismId);
         if (!mechanismId) return;
+
+        this.clearFields(); // Išvalome spalvą ir medžiagą
     
         try {
             const response = await fetch(`/gaminio-spalvos/${mechanismId}`);
@@ -105,8 +137,8 @@ export default class extends Controller {
         if (this.materialSelectTarget.tomselect) {
             this.materialSelectTarget.tomselect.destroy();
         }
-
-        new TomSelect(this.materialSelectTarget, {
+    
+        new window.TomSelect(this.materialSelectTarget, {
             valueField: "id",
             labelField: "text",
             searchField: "text",
@@ -114,9 +146,9 @@ export default class extends Controller {
                 if (query.length < 2) {
                     return callback();
                 }
-
+    
                 try {
-                    const response = await fetch(`/medziagos-paieska?q=${query}`);
+                    const response = await fetch(`/uzsakymai/medziagos-paieska?q=${query}`);
                     const data = await response.json();
                     callback(data);
                 } catch (error) {
@@ -243,4 +275,60 @@ export default class extends Controller {
             alertContainer.classList.add("d-none");
         }, 3000);
     }
+
+    clearFields() {
+        console.log("🧹 Valome laukus...");
+        
+           
+        // Išvalome gaminio spalvą
+        if (this.hasColorSelectTarget) {
+            this.colorSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
+        }
+    
+        // Išvalome medžiagą ir atstatome TomSelect
+        if (this.hasMaterialSelectTarget) {
+            console.log("🧹 Valome medžiagos lauką...");
+    
+            if (this.materialSelectTarget.tomselect) {
+                this.materialSelectTarget.tomselect.clear();
+                this.materialSelectTarget.tomselect.clearOptions();
+            }
+    
+            // Nustatome pradinę būseną
+            this.materialSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
+            this.initMaterialSelect();
+        }
+    }
+
+    validateWidth(event) {
+        const width = event.target.value;
+        const widthNumber = parseInt(width, 10);
+    
+        // Patikriname, ar plotis ne mažesnis nei minimalus ir ne didesnis nei maksimalus
+        if (widthNumber < this.minWidth) {
+            this.showWidthError(`Plotis turi būti ne mažesnis nei ${this.minWidth} mm.`);
+        } else if (widthNumber > this.maxWidth) {
+            this.showWidthError(`Maksimalus plotis yra ${this.maxWidth} mm. Platesniam garantija nesuteikiama.`);
+        } else {
+            this.clearWidthError(); // Jei plotis teisingas, išvalome klaidą
+        }
+    }
+
+    // Funkcija klaidos pranešimui
+    showWidthError(message) {
+        const errorMessageElement = document.getElementById("width-error-message");
+        if (errorMessageElement) {
+            errorMessageElement.textContent = message;
+            errorMessageElement.classList.remove("d-none");
+        }
+    }
+
+    // Funkcija klaidos pranešimo pašalinimui
+    clearWidthError() {
+        const errorMessageElement = document.getElementById("width-error-message");
+        if (errorMessageElement) {
+            errorMessageElement.classList.add("d-none");
+        }
+    }
+
 }
