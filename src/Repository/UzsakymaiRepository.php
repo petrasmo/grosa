@@ -5,8 +5,7 @@ use Doctrine\DBAL\Connection;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
-
-class FormosRepository
+class UzsakymaiRepository
 {
     private Connection $db;
     private Security $security;
@@ -20,13 +19,10 @@ class FormosRepository
     public function getGaminiai(): array
     {
         $query = "
-            SELECT b.id AS id, CONCAT(a.name, ' (', b.name, ')') AS text
-            FROM ord_product a
-            LEFT JOIN ord_roller_mechanism b ON a.id = b.id_product
-            WHERE a.deleted <> 1 
+            SELECT a.id AS id, a.name AS text
+            FROM ord_product a           
+            WHERE a.deleted <> 1          
             AND a.public = 1 
-            AND b.deleted <> 1 
-            AND b.public = 1
             ORDER BY a.name
         ";
 
@@ -53,13 +49,14 @@ class FormosRepository
         // Gauk vartotoją iš saugumo komponento
         $gaminysId = $data['gaminys_id'];
         $user = $this->security->getUser();
-
-        /** @var \App\Entity\User|null $user */
         if (!$user) {
             throw new AuthenticationException("Vartotojas neprisijungęs.");
         }
-        
-        $userId = $user->getId(); // Dabar klaidos nebebus
+
+        $userId = $user->getId(); // Assuming User entity has a getId() method
+
+       
+
 
         foreach ($data['atributai'] as $item) {
             $gfaId = $item['gfa_id'] !== "" ? (int) $item['gfa_id'] : null;

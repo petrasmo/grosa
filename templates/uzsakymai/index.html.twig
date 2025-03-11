@@ -1,211 +1,64 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Įkelti Užsakymų Failą{% endblock %}
-
 {% block body %}
-    <h1>Įkelti Užsakymų Failą</h1>
-
-    {% if error is defined %}
-        <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-    {% if success is defined and success is not empty %}
-        <div class="alert alert-success">{{ success }}</div>
-    {% endif %}
-
-    <form action="{{ path('uzsakymai_upload_post') }}" method="post" enctype="multipart/form-data">
-        <label for="file">Pasirinkite failą (CSV arba Excel):</label>
-        <input type="file" name="file" id="file" required>
-        <button type="submit">Įkelti</button>
-    </form>
-
-    
-
-    <button id="loadData" class="btn btn-primary">Sumapinti ir užkrauti duomenis</button>
+<div class="container mt-4">
+    <h2>Užsakymai</h2>
+    <button id="new-order" class="btn btn-primary mb-3">Naujas užsakymas</button>
 
     <table id="uzsakymaiTable" class="table table-striped">
         <thead>
-        <tr>
-            <th>Gaminio Kodas</th>
-            <th>Gaminio Sistemos Kodas</th>
-            <th>Gaminio Storis</th>
-        </tr>
+            <tr>
+                <th>Užsakymo numeris</th>
+                <th>Data</th>
+                <th>Būsena</th>
+                <th>Pristatymas</th>
+                <th>Suma</th>
+                <th>Veiksmai</th>
+            </tr>
         </thead>
-        <tbody></tbody> <!-- BŪTINAS -->
+        <tbody>
+            {% for uzsakymas in uzsakymai %}
+                <tr>
+                    <td>{{ uzsakymas.uzs_nr }}</td>
+                    <td>{{ uzsakymas.uzs_create_date|date('Y-m-d H:i') }}</td>
+                    <td>{{ uzsakymas.uzs_busena }}</td>
+                    <td>{{ uzsakymas.uzs_pristatymas }}</td>
+                    <td>{{ uzsakymas.uzs_suma|number_format(2, '.', ',') }}</td>
+                    <td>
+                        <a href="{{ path('uzsakymai_redaguoti', {'id': uzsakymas.uzs_id}) }}" class="btn btn-sm btn-outline-secondary">✏️</a>
+                        <a href="{{ path('uzsakymai_redaguoti', {'id': uzsakymas.uzs_id}) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Ar tikrai norite ištrinti?');">🗑️</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
-    
-    <div id="success-message" class="alert alert-success d-none"></div>
-    <button id="saveData" class="btn btn-success">Išsaugoti</button>
-    <button id="downloadExcel" class="btn btn-warning">Atsisiųsti Excel</button>
+</div>
 
-    <div class="mt-3"> {# Pridėta šiek tiek tarpo tarp mygtukų ir textarea #}
-        <textarea id="inputData" class="form-control" rows="3" placeholder="Čia įklijuokite duomenis..."></textarea>
-        <button id="processData" class="btn btn-primary mt-2">Apdoroti</button>
-    </div>
+<script>
+   document.addEventListener("turbo:load", function() {
+        if ($.fn.DataTable.isDataTable("#uzsakymaiTable")) {
+            $('#uzsakymaiTable').DataTable().destroy();
+        }
 
-    <h2>Supjaustymai</h2>
-    <pre id="output"></pre>
-
-
-    <script>
-    $(document).ready(function() {
-            // Mygtukas duomenims užkrauti
-            $('#loadData').on('click', function() {
-                $.ajax({
-                    url: '{{ path("uzsakymai_data") }}',
-                    method: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        table.clear().rows.add(data).draw();
-                    },
-                    error: function() {
-                        alert("Nepavyko užkrauti duomenų.");
-                    }
-                });
-            });
-
-            // Inicializuojame DataTable
-            let table = $('#uzsakymaiTable').DataTable({
-                columns: [
-                    { data: 'GAMINIO_KODAS' },
-                    {
-                        data: 'GAMINIO_SIST_KODAS',
-                        render: function(data, type, row) {
-                            if (type === 'display') {
-                                return `<select class="select-gaminio-sistemos" data-gaminio-kodas="${row.GAMINIO_KODAS}" data-gaminio-storis="${row.GAMINIO_STORIS}">
-                                            <option value="${data}" selected>${data}</option>
-                                        </select>`;
-                            }
-                            return data;
-                        }
-                    },
-                    { data: 'GAMINIO_STORIS' }
-                ],
-                drawCallback: function() {
-                    $('.select-gaminio-sistemos').each(function() {
-                        let $selectSistKodas = $(this);
-                        let currentGaminioKodas = $selectSistKodas.data('gaminio-kodas');
-                        let currentGaminioStoris = $selectSistKodas.data('gaminio-storis');
-
-                        if (!$selectSistKodas.hasClass("select2-hidden-accessible")) {
-                            $selectSistKodas.select2({
-                                width: '100%',
-                                ajax: {
-                                    url: '{{ path("uzsakymai_gaminio_sistemos") }}',
-                                    dataType: 'json',
-                                    delay: 250,
-                                    data: function(params) {
-                                        return {
-                                            search: params.term,
-                                            gaminio_kodas: currentGaminioKodas,
-                                            gaminio_storis: currentGaminioStoris
-                                        };
-                                    },
-                                    processResults: function(data) {
-                                        return { results: data };
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-
-            // Mygtukas "Išsaugoti" - siunčia visus duomenis į serverį
-            $('#saveData').on('click', function() {
-                let tableData = [];
-
-                // Surenkame visus duomenis iš DataTable
-                $('#uzsakymaiTable tbody tr').each(function() {
-                    let row = $(this);
-                    let gaminioKodas = row.find('td:eq(0)').text().trim();
-                    let gaminioSistKodas = row.find('.select-gaminio-sistemos').val();
-                    let gaminioStoris = row.find('td:eq(2)').text().trim();
-
-                    tableData.push({
-                        gaminio_kodas: gaminioKodas,
-                        gaminio_sist_kodas: gaminioSistKodas,
-                        gaminio_storis: gaminioStoris
-                    });
-                });
-
-                // Siunčiame AJAX užklausą į kontrolerį
-                $.ajax({
-                    url: '{{ path("uzsakymai_save") }}',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ uzsakymai: tableData }),
-                    success: function(response) {
-                        if (response.success) {
-                            $('#success-message')
-                                .text(response.message)
-                                .removeClass('d-none'); // Rodo žalią pranešimą
-
-                            // Po 3 sekundžių paslepia pranešimą
-                            setTimeout(function() {
-                                $('#success-message').addClass('d-none');
-                            }, 3000);
-                        }
-                    },
-                    error: function(error) {
-                        alert('Įvyko klaida išsaugant duomenis.');
-                        console.error(error);
-                    }
-                });
-            });
-            $('#downloadExcel').on('click', function() {
-            window.location.href = '{{ path("uzsakymai_download") }}';
-        });
+        $('#uzsakymaiTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true
         });
 
-        $(document).ready(function() {
-    // Kai paspaudžiama "Apdoroti", iškviečiame sendData funkciją
-    $('#processData').on('click', sendData);
-});
-
-function sendData() {
-    let input = document.getElementById("inputData").value;
-    let rows = input.trim().split("\n");
-    let dataToSend = [];
-
-    rows.forEach(row => {
-        let columns = row.split("\t"); // Skirtukas (\t) kaip separatorius
-        
-        if (columns.length > 6) {
-            let entry = {
-                kodas: columns[1],
-                pavadinimas: columns[2],
-                kiekis: parseFloat(columns[3]) || 0,
-                kaina: parseFloat(columns[6]) || 0
-            };
-            dataToSend.push(entry);
+        // Patikrinsim, ar mygtukas egzistuoja prieš priskiriant event listener
+        let newOrderButton = document.getElementById("new-order");
+        if (newOrderButton) {
+            newOrderButton.removeEventListener("click", newOrderHandler);
+            newOrderButton.addEventListener("click", newOrderHandler);
         }
     });
 
-    // Tikriname, ar yra duomenų siuntimui
-    if (dataToSend.length === 0) {
-        document.getElementById("output").innerText = "⚠️ Nėra duomenų siuntimui!";
-        return;
+    // Funkcija mygtuko eventui
+    function newOrderHandler() {
+        window.location.href = "{{ path('uzsakymai_redaguoti') }}";
     }
 
-    // Siunčiame JSON į Symfony kontrolerį
-    fetch('/api/save-cuts', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataToSend)
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById("output").innerText = "✅ Atsakymas: " + JSON.stringify(data, null, 2);
-    })
-    .catch(error => {
-        document.getElementById("output").innerText = "❌ Klaida: " + error;
-    });
-}
-
-    </script>
-
-
-
+</script>
 {% endblock %}
+

@@ -1,15 +1,15 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-    static targets = ["select", "tableBody", "tableContainer"];
-
+    static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", "colorSelect"];
+   
     connect() {
         if (this.element.dataset.initialized) {
-            console.warn("⚠️ Atributai valdiklis jau buvo prijungtas!");
+           // console.warn("⚠️ Atributai valdiklis jau buvo prijungtas!");
             return;
         }
         this.element.dataset.initialized = "true";
-        console.log("✅ Atributai valdiklis prijungtas!");
+        //console.log("✅ Atributai valdiklis prijungtas!");
     }
 
     async loadAttributes() {
@@ -27,6 +27,74 @@ export default class extends Controller {
         } catch (error) {
             console.error("❌ Klaida gaunant duomenis:", error);
             this.showMessage("Klaida gaunant duomenis", "danger");
+        }
+    }
+
+    async updateTypes(event) {
+        const gamId = event.target.value;
+        console.log("🔄 Pasirinktas gaminys ID:", gamId);
+        if (!gamId) return;
+    
+        try {
+            const response = await fetch(`/gaminio-tipai/${gamId}`);
+            console.log("📡 Užklausa išsiųsta į:", `/gaminio-tipai/${gamId}`);
+    
+            const data = await response.json();
+            console.log("📥 Gauti duomenys:", data);
+    
+            // Patikriname, ar target tikrai egzistuoja
+            if (!this.hasGamtipasSelectTarget) {
+                console.error("❌ Klaida: Target gamtipasSelect nerastas!");
+                return;
+            }
+    
+            // Išvalome esamus pasirinkimus
+            this.gamtipasSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
+    
+            // Pridedame naujus pasirinkimus
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.id;
+                option.textContent = item.text;
+                this.gamtipasSelectTarget.appendChild(option);
+            });
+    
+        } catch (error) {
+            console.error("❌ Klaida kraunant gaminio tipus:", error);
+        }
+    }
+
+    async updateColors(event) {
+        const mechanismId = event.target.value;
+        console.log("🔄 Pasirinktas mechanizmas ID:", mechanismId);
+        if (!mechanismId) return;
+    
+        try {
+            const response = await fetch(`/gaminio-spalvos/${mechanismId}`);
+            console.log("📡 Užklausa išsiųsta į:", `/gaminio-spalvos/${mechanismId}`);
+    
+            const data = await response.json();
+            console.log("📥 Gauti duomenys:", data);
+    
+            // Patikriname, ar target tikrai egzistuoja
+            if (!this.hasColorSelectTarget) {
+                console.error("❌ Klaida: Target colorSelect nerastas!");
+                return;
+            }
+    
+            // Išvalome esamus pasirinkimus
+            this.colorSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
+    
+            // Pridedame naujas spalvas
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.id;
+                option.textContent = item.name;
+                this.colorSelectTarget.appendChild(option);
+            });
+    
+        } catch (error) {
+            console.error("❌ Klaida kraunant spalvas:", error);
         }
     }
 

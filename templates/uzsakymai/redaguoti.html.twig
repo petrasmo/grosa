@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div data-controller="atributai">
+    <!-- GAMINYS (Kai pasirenkama, dinamiškai keičia Gaminio tipą) -->
+    <div class="mb-3 p-3 form-container">
+        <label for="gam_id" class="form-label">Gaminys</label>
+        <select id="gam_id" class="form-select fw-bold"
+                name="gam_id"
+                data-atributai-target="select"
+                data-action="change->atributai#updateTypes">
+            <option value="" selected disabled>-- Pasirinkite gaminį --</option>
+            {% for gaminys in gaminiai %}
+                <option value="{{ gaminys.id }}">{{ gaminys.text }}</option>
+            {% endfor %}
+        </select>
+        <div class="invalid-feedback">Pasirinkite gaminį.</div>
+    </div>
+
+    <!-- GAMINIO TIPAS (Šis select atsinaujina pagal pasirinkimą) -->
+    <div class="col-md-6 mb-3">
+        <label for="mechanism_id" class="form-label">Gaminio tipas</label>
+        <select class="form-select" id="mechanism_id"
+                data-atributai-target="gamtipasSelect"
+                data-atributai-target="mechanismSelect"
+                data-action="change->atributai#updateColors"
+                required>
+            <option value="" selected disabled>Pasirinkite...</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite gaminio tipą.</div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label for="productColor" class="form-label">Gaminio spalva</label>
+        <select class="form-select" id="productColor"
+                data-atributai-target="colorSelect"
+                required>
+            <option value="" selected disabled>Pasirinkite...</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite gaminio spalvą.</div>
+    </div>
+</div>
+{% endblock %}
