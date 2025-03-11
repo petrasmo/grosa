@@ -45,17 +45,17 @@ class UzsakymaiController extends AbstractController
     #[Route('/gaminio-tipai/{gamId}', name: 'gaminio_tipai', methods: ['GET'])]
     public function getGaminioTipai(int $gamId, Connection $connection): JsonResponse
     {
-        // SQL užklausa pagal pasirinkto gaminio ID
+      //aaaaa
         $sql = "SELECT a.id AS id, a.name AS text 
                 FROM ord_roller_mechanism a
                 WHERE a.id_product = :gamId 
                 AND a.deleted <> 1 
                 AND a.public = 1
-                ORDER BY a.name";
-        
+                ORDER BY a.name";  
+
         $gaminioTipai = $connection->fetchAllAssociative($sql, ['gamId' => $gamId]);
 
-        return $this->json($gaminioTipai);
+        return $this->json($gaminioTipai); 
     }
 
     #[Route('/gaminio-spalvos/{mechanismId}', name: 'gaminio_spalvos', methods: ['GET'])]
