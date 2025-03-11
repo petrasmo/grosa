@@ -1,7 +1,9 @@
 import { Controller } from "@hotwired/stimulus";
+import TomSelect from "tom-select";
 
 export default class extends Controller {
-    static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", "colorSelect"];
+    static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
+        "colorSelect","materialSelect"];
    
     connect() {
         if (this.element.dataset.initialized) {
@@ -9,6 +11,7 @@ export default class extends Controller {
             return;
         }
         this.element.dataset.initialized = "true";
+        this.initMaterialSelect();
         //console.log("✅ Atributai valdiklis prijungtas!");
     }
 
@@ -96,6 +99,34 @@ export default class extends Controller {
         } catch (error) {
             console.error("❌ Klaida kraunant spalvas:", error);
         }
+    }
+
+    initMaterialSelect() {
+        if (this.materialSelectTarget.tomselect) {
+            this.materialSelectTarget.tomselect.destroy();
+        }
+
+        new TomSelect(this.materialSelectTarget, {
+            valueField: "id",
+            labelField: "text",
+            searchField: "text",
+            load: async (query, callback) => {
+                if (query.length < 2) {
+                    return callback();
+                }
+
+                try {
+                    const response = await fetch(`/medziagos-paieska?q=${query}`);
+                    const data = await response.json();
+                    callback(data);
+                } catch (error) {
+                    console.error("Klaida kraunant medžiagas:", error);
+                    callback();
+                }
+            },
+            placeholder: "Įveskite bent 2 simbolius...",
+            maxOptions: 20
+        });
     }
 
     populateTable(data) {

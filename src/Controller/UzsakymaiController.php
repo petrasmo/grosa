@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Doctrine\DBAL\Connection;
 use App\Repository\UzsakymaiRepository; // <-- Šito trūko!
 
@@ -71,5 +72,32 @@ class UzsakymaiController extends AbstractController
         $spalvos = $connection->fetchAllAssociative($sql, ['mechanismId' => $mechanismId]);
 
         return $this->json($spalvos);
+    }
+
+    #[Route('/medziagos-paieska', name: 'medziagos_paieska', methods: ['GET'])]
+    public function medziagosPaieska(Request $request, Connection $connection): JsonResponse
+    {
+        $query = $request->query->get('q', '');
+        if (strlen($query) < 2) {
+            return $this->json([]); // Grąžiname tuščią masyvą, jei per mažai simbolių
+        }
+
+        $sql = "SELECT omm.id_material AS id, m2.wholesale_name AS text
+                FROM ord_material_mechanism omm
+                LEFT JOIN ord_roller_material m ON m.id = omm.id_material
+                LEFT JOIN ord_material_mechanism mm ON mm.id_material = omm.id_material
+                LEFT JOIN ord_roller_material m2 ON m2.id = mm.id_material
+                WHERE mm.id_mechanism = 28
+                AND m2.wholesale_name LIKE :query
+                AND omm.id_mechanism = 28
+                AND mm.deleted = 0
+                AND m2.deleted = 0
+                AND omm.wholesale = 1
+                order by m2.wholesale_name
+                LIMIT 50"; // Ribojame iki 50 rezultatų
+
+        $medziagos = $connection->fetchAllAssociative($sql, ['query' => "%$query%"]);
+
+        return $this->json($medziagos);
     }
 }
