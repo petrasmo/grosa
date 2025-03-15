@@ -110,12 +110,6 @@
 
 
 
-
-
-
-
-
-
 <div class="row mb-3">
     <div class="col-md-6 mb-3">
         <label for="heigth" class="form-label">Gaminio aukštis (mm)</label>
@@ -130,6 +124,99 @@
         <div id="heigth-error-message" class="invalid-feedback d-none"></div>
 
     </div>      
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="medzheigth" class="form-label">Medžiagos aukštis (mm)</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="medzheigth" required
+                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
+            >
+            <span class="input-group-text">mm</span>
+        </div>
+
+        <div id="hemedzheigth-error-message" class="invalid-feedback d-none"></div>
+
+    </div>      
+</div>
+
+
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="valdymas" class="form-label">Valdymas</label>
+        <select class="form-select" id="valdymas" name="valdymas" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="K">Kairė</option>
+            <option value="D">Dešinė</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite valdymo kryptį.</div>
+    </div>
+</div>
+
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="stabdymas" class="form-label">Stabdymo mechanizmas</label>
+        <select class="form-select" id="stabdymas" name="stabdymas" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite stabdymo mechanizmą.</div>
+    </div>
+</div>
+
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="atitraukimas" class="form-label">Atgitraukimo kaladėlė</label>
+        <select class="form-select" id="atitraukimas" name="atitraukimas" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite atitraukimo kaladėlę.</div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="montavimasi" class="form-label">Montavimo vieta</label>
+        <select class="form-select" id="montavimasi" name="montavimasi" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="R">Ant lango rėmo</option>
+            <option value="L">Į lubas</option>
+            <option value="N">Virš nišos</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite montavimo vietą.</div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="valoitempimas" class="form-label">Valo įtempimas</label>
+        <select class="form-select" id="valoitempimas" name="valoitempimas" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite valo įtempimą.</div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6 mb-3">
+        <label for="approfiliofiks" class="form-label">Ap. prof. fiksacija</label>
+        <select class="form-select" id="approfiliofiks" name="approfiliofiks" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite ap. profilio fiksacija.</div>
+    </div>
 </div>
               
                      
