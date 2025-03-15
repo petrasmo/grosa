@@ -101,4 +101,26 @@ class UzsakymaiController extends AbstractController
 
         return $this->json($medziagos);
     }
+
+    #[Route('gaminio-plotis/{mechanismId}', name: 'gaminio_plotis', methods: ['GET'])]
+    public function getGaminioPlotis(int $mechanismId, Connection $connection): JsonResponse
+    {
+        $sql = "SELECT a.min_width, a.max_warranty_width
+                FROM ord_roller_mechanism a
+                WHERE id = :mechanismId
+                AND a.deleted <> 1
+                AND a.public = 1";
+
+        $result = $connection->fetchAssociative($sql, ['mechanismId' => $mechanismId]);
+
+        // Patikriname, ar buvo rasta reikšmių
+        if (!$result) {
+            return $this->json(['error' => 'Gaminio tipas nerastas'], 404);
+        }
+
+        return $this->json([
+            'minWidth' => $result['min_width'],
+            'maxWidth' => $result['max_warranty_width']
+        ]);
+    }
 }

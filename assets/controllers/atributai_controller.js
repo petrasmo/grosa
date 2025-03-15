@@ -6,35 +6,19 @@ export default class extends Controller {
         "colorSelect","materialSelect"];
    
     connect() {
-    if (this.element.dataset.initialized) {
-        return;  // Jei jau buvo inicijuota, nutraukiame
+        if (this.element.dataset.initialized) {
+           // console.warn("⚠️ Atributai valdiklis jau buvo prijungtas!");
+            return;
+        }
+        this.element.dataset.initialized = "true";
+        if (this.hasMaterialSelectTarget) {
+        this.initMaterialSelect();   
+        // Užklausos užkrovimas pagal gaminio tipą, kai pelė užkelia žymeklį ant lauko
+        this.setupWidthField();
+
     }
-
-    this.element.dataset.initialized = "true";  // Pažymime, kad buvo atlikta inicializacija
-
-    // Tikriname, ar selectTarget egzistuoja ir turi reikšmę
-    const gaminysId = this.hasSelectTarget ? this.selectTarget.value : null;
-
-    if (gaminysId) {
-        // Užklausa gauti gaminio tipo duomenis
-        fetch(`/gaminio-tipai/${gaminysId}`)
-            .then(response => response.json())
-            .then(data => {
-                // Tikriname, ar duomenys gauti
-                if (data && data.length > 0) {
-                    this.minWidth = data[0].min_width;  // Gauti minimalų plotį
-                    this.maxWidth = data[0].max_warranty_width;  // Gauti maksimalų plotį
-                    console.log('Gauti duomenys:', data);
-                }
-            })
-            .catch(error => console.error("Klaida gaunant gaminio tipus:", error));
+        //console.log("✅ Atributai valdiklis prijungtas!");
     }
-
-    // Inicijuojame MaterialSelect tik jei jis yra
-    if (this.hasMaterialSelectTarget) {
-        this.initMaterialSelect();
-    }
-}
 
     async loadAttributes() {
         const gaminysId = this.selectTarget.value;
@@ -85,11 +69,6 @@ export default class extends Controller {
                 this.gamtipasSelectTarget.appendChild(option);
             });
 
-            this.minWidth = data[0].min_width;  // Assuming data[0] contains the correct values
-            this.maxWidth = data[0].max_warranty_width;
-    
-            console.log("❗ Minimalus plotis:", this.minWidth);
-            console.log("❗ Maksimalus plotis:", this.maxWidth);
           
     
         } catch (error) {
@@ -258,6 +237,78 @@ export default class extends Controller {
         }
     }
 
+    setupWidthField() {
+        const widthField = this.element.querySelector('#width');
+        if (!widthField) return;
+        widthField.addEventListener('mouseenter', async () => {
+            const gaminioTipasId = this.gamtipasSelectTarget.value;
+            if (!gaminioTipasId) return;
+            try {
+                const response = await fetch(`/gaminio-plotis/${gaminioTipasId}`);
+                const data = await response.json();
+                
+                if (data && data.minWidth && data.maxWidth) {
+                    // Gauti minWidth ir maxWidth
+                    this.minWidth = data.minWidth;
+                    this.maxWidth = data.maxWidth;            
+
+                    widthField.setAttribute('data-min-width', this.minWidth);
+                    widthField.setAttribute('data-max-width', this.maxWidth);
+                    
+                    console.log('Gauti minWidth ir maxWidth:', this.minWidth, this.maxWidth);
+                }
+            } catch (error) {
+                console.error('Klaida užkraunant duomenis:', error);
+            }
+        });
+    }
+    
+    /*validateWidth(event) {
+        const widthField = event.target;
+        const width = widthField.value;
+        const widthNumber = parseInt(width, 10);
+    
+        // Gauk minimalų ir maksimalų plotį iš duomenų atributų
+        const minWidth = parseInt(widthField.dataset.minWidth, 10);
+        const maxWidth = parseInt(widthField.dataset.maxWidth, 10);
+    
+        // Jei plotis yra mažesnis už minimalų, rodyti klaidos pranešimą
+        if (widthNumber < minWidth) {
+            this.showWidthError(`Plotis turi būti ne mažesnis nei ${minWidth} mm.`);
+        } else if (widthNumber > maxWidth) {
+            this.showWidthError(`Maksimalus plotis yra ${maxWidth} mm. Platesniam garantija nesuteikiama.`);
+        } else {
+            this.clearWidthError(); // Jei plotis teisingas, išvalome klaidą
+        }
+    
+        // Jei plotis viršija max plotį, rodyti įspėjimą apie didesnį plotį
+        if (widthNumber > maxWidth) {
+            this.showWidthWarning();
+        } else {
+            this.hideWidthWarning();
+        }
+    }
+    
+    showWidthError(message) {
+        console.log('aaaaaaaaa');
+        const errorMessageElement = document.getElementById("width-error-message");
+        console.log('aaabbbaaaaaa'+errorMessageElement.textContent);
+        errorMessageElement.textContent = message; // Keičia klaidos pranešimą
+        errorMessageElement.classList.remove("d-none"); // Pašalina d-none, kad pranešimas būtų matomas
+    }
+    
+    clearWidthError() {
+        const errorMessageElement = document.getElementById("width-error-message");
+        errorMessageElement.classList.add("d-none"); // Prideda d-none, kad paslėptų klaidos pranešimą
+    }
+
+    hideWidthWarning() {
+        document.getElementById("width-warning").classList.add("d-none");
+    }*/
+    
+
+    
+
     showMessage(message, type) {
         let alertContainer = document.getElementById("alert-container");
         if (!alertContainer) {
@@ -297,37 +348,6 @@ export default class extends Controller {
             // Nustatome pradinę būseną
             this.materialSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
             this.initMaterialSelect();
-        }
-    }
-
-    validateWidth(event) {
-        const width = event.target.value;
-        const widthNumber = parseInt(width, 10);
-    
-        // Patikriname, ar plotis ne mažesnis nei minimalus ir ne didesnis nei maksimalus
-        if (widthNumber < this.minWidth) {
-            this.showWidthError(`Plotis turi būti ne mažesnis nei ${this.minWidth} mm.`);
-        } else if (widthNumber > this.maxWidth) {
-            this.showWidthError(`Maksimalus plotis yra ${this.maxWidth} mm. Platesniam garantija nesuteikiama.`);
-        } else {
-            this.clearWidthError(); // Jei plotis teisingas, išvalome klaidą
-        }
-    }
-
-    // Funkcija klaidos pranešimui
-    showWidthError(message) {
-        const errorMessageElement = document.getElementById("width-error-message");
-        if (errorMessageElement) {
-            errorMessageElement.textContent = message;
-            errorMessageElement.classList.remove("d-none");
-        }
-    }
-
-    // Funkcija klaidos pranešimo pašalinimui
-    clearWidthError() {
-        const errorMessageElement = document.getElementById("width-error-message");
-        if (errorMessageElement) {
-            errorMessageElement.classList.add("d-none");
         }
     }
 
