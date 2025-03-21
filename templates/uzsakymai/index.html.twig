@@ -25,8 +25,13 @@
                     <td>{{ uzsakymas.uzs_pristatymas }}</td>
                     <td>{{ uzsakymas.uzs_suma|number_format(2, '.', ',') }}</td>
                     <td>
-                        <a href="{{ path('uzsakymai_redaguoti', {'id': uzsakymas.uzs_id}) }}" class="btn btn-sm btn-outline-secondary">✏️</a>
-                        <a href="{{ path('uzsakymai_redaguoti', {'id': uzsakymas.uzs_id}) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Ar tikrai norite ištrinti?');">🗑️</a>
+                        <a href="{{ path('uzsakymai_redaguoti', {'uzs_id': uzsakymas.uzs_id}) }}" class="btn btn-sm btn-outline-secondary">✏️</a>
+                        <button 
+                                class="btn btn-sm btn-outline-danger salinti-uzsakyma" 
+                                data-id="{{ uzsakymas.uzs_id }}"
+                                onclick="return confirm('Ar tikrai norite ištrinti?');">
+                                 🗑️
+                                </button>
                     </td>
                 </tr>
             {% endfor %}
@@ -35,7 +40,42 @@
 </div>
 
 <script>
-   document.addEventListener("turbo:load", function() {
+    // Naujo užsakymo handler'is
+    function newOrderHandler() {
+        window.location.href = "{{ path('uzsakymai_redaguoti') }}";
+    }
+
+    // SALINIMO handler'is (svarbu atskirai aprašytas!)
+    function salintiHandler(e) {
+        e.preventDefault();
+
+        const id = this.dataset.id;
+        if (!confirm('Ar tikrai norite ištrinti?')) return;
+
+        fetch(`/uzsakymai/salinti/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(json => {
+            if (json.success) {
+                alert(json.message);
+                // Pašalinam eilutę iš lentelės
+                this.closest('tr').remove();
+            } else {
+                alert('Klaida: ' + json.message);
+            }
+        })
+        .catch(error => {
+            console.error('Klaida:', error);
+            alert('Įvyko klaida.');
+        });
+    }
+
+    document.addEventListener("turbo:load", function() {
+        // DataTable inicializacija
         if ($.fn.DataTable.isDataTable("#uzsakymaiTable")) {
             $('#uzsakymaiTable').DataTable().destroy();
         }
@@ -46,19 +86,19 @@
             ordering: true
         });
 
-        // Patikrinsim, ar mygtukas egzistuoja prieš priskiriant event listener
+        // Mygtukas naujam užsakymui
         let newOrderButton = document.getElementById("new-order");
         if (newOrderButton) {
             newOrderButton.removeEventListener("click", newOrderHandler);
             newOrderButton.addEventListener("click", newOrderHandler);
         }
+
+        // SALINIMO mygtukai
+        document.querySelectorAll('.salinti-uzsakyma').forEach(button => {
+            button.removeEventListener('click', salintiHandler); // Pašalinam seną
+            button.addEventListener('click', salintiHandler); // Pridedam naują
+        });
     });
-
-    // Funkcija mygtuko eventui
-    function newOrderHandler() {
-        window.location.href = "{{ path('uzsakymai_redaguoti') }}";
-    }
-
 </script>
 {% endblock %}
 

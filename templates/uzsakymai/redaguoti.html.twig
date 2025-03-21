@@ -1,475 +1,75 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<body>
+
                                
-<form id="orderForm" class="needs-validation" novalidate>
-
-<div data-controller="atributai" data-max-width="{{ maxWidth }}" data-min-width="{{ minWidth }}">
-    <!-- GAMINYS (Kai pasirenkama, dinamiškai keičia Gaminio tipą) -->
-    <div class="mb-3 p-3 form-container">
-        <label for="gam_id" class="form-label">Gaminys</label>
-        <select id="gam_id" class="form-select fw-bold"
-                name="gam_id"
-                data-atributai-target="select"
-                data-action="change->atributai#updateTypes"
-                required>
-            <option value="" selected disabled>-- Pasirinkite gaminį --</option>
-            {% for gaminys in gaminiai %}
-                <option value="{{ gaminys.id }}">{{ gaminys.text }}</option>
-            {% endfor %}
-        </select>
-        <div class="invalid-feedback">Pasirinkite gaminį.</div>
-    </div>
-
-    <!-- GAMINIO TIPAS (Šis select atsinaujina pagal pasirinkimą) -->
-    <div class="col-md-6 mb-3">
-        <label for="mechanism_id" class="form-label">Gaminio tipas</label>
-        <select class="form-select" id="mechanism_id"
-                data-atributai-target="gamtipasSelect"
-                data-atributai-target="mechanismSelect"
-                data-action="change->atributai#updateColors"
-                required>
-            <option value="" selected disabled>Pasirinkite...</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite gaminio tipą.</div>
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <label for="productColor" class="form-label">Gaminio spalva</label>
-        <select class="form-select" id="productColor"
-                data-atributai-target="colorSelect"
-                required>
-            <option value="" selected disabled>Pasirinkite...</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite gaminio spalvą.</div>
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <label for="materialSelect" class="form-label">Medžiaga</label>
-        <select id="materialSelect" class="form-select"
-                data-atributai-target="materialSelect"
-                placeholder="Pradėkite rašyti..."
-                autocomplete="off"
-                required>
-        </select>
-        <div class="invalid-feedback">Pasirinkite medžiagą.</div>
-    </div>
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-    <label for="width" class="form-label">Gaminio plotis (mm)</label>
-    <div class="input-group">
-        <input type="number" class="form-control" id="width" required
-               onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-               oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
-               data-min-width="{{ minWidth }}"  
-               data-max-width="{{ maxWidth }}"
-               onblur="this.dispatchEvent(new Event('input'))">
-        <span class="input-group-text">mm</span>
-    </div>
-
-    <div id="width-error-message" class="invalid-feedback d-none"></div>
-
-        <div id="widthWarning" class="alert alert-warning d-none">
-        <label class="form-label fw-bold text-danger small">
-            ⚠️ Maksimalus gaminio plotis: <strong>{{ maxWidth }}</strong> mm. Platesniam garantija nesuteikiama.
-        </label>
-        <div>
-            <input type="radio" id="agree" name="width_agreement" value="agree" required>
-            <label for="agree">Sutinku</label>
-        </div>
-        <div>
-            <input type="radio" id="disagree" name="width_agreement" value="disagree" required>
-            <label for="disagree">Nesutinku</label>
-        </div>
-        <div id="widthWarningError" class="text-warning d-none">⚠️ Turite pasirinkti vieną iš variantų!</div>
-    </div>
-</div>
-
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-    <label for="medzwidth" class="form-label">Medžiagos plotis (mm)</label>
-    <div class="input-group">
-        <input type="number" class="form-control" id="medzwidth" required
-               onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-               oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
-               onblur="this.dispatchEvent(new Event('input'));">
-        <span class="input-group-text">mm</span>
-    </div>
-
-    <div id="medzwidth-error-message" class="invalid-feedback d-none"></div>       
-</div>
 
 
 
 
+<div data-controller="atributai" data-max-width="{{ maxWidth }}" data-min-width="{{ minWidth }}" class="needs-validation" 
+    data-atributai-target="formContainer">
+<input type="hidden" id="uzs_id" name="uzs_id" value="{{ uzs_id }}" data-atributai-target="uzsId">
 
 
+<div class="uzsakymo-eilute p-3 mb-4 border rounded">
+    <input type="hidden" id="uze_id" name="uze_id" value="{{ uze_id }}">
 
-
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="heigth" class="form-label">Gaminio aukštis (mm)</label>
-        <div class="input-group">
-            <input type="number" class="form-control" id="heigth" required
-                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-                oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
-            >
-            <span class="input-group-text">mm</span>
+    <div class="row mb-3">
+        <div class="col-md-6 mb-3">
+            <label for="gam_id" class="form-label">Gaminys</label>
+            <select id="gam_id" class="form-select fw-bold" name="gam_id" data-atributai-target="select" data-action="change->atributai#updateTypes" required>
+                <option value="" selected disabled>-- Pasirinkite gaminį --</option>
+                {% for gaminys in gaminiai %}
+                    <option value="{{ gaminys.id }}">{{ gaminys.text }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">Pasirinkite gaminį.</div>
         </div>
 
-        <div id="heigth-error-message" class="invalid-feedback d-none"></div>
-
-    </div>      
-</div>
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="medzheigth" class="form-label">Medžiagos aukštis (mm)</label>
-        <div class="input-group">
-            <input type="number" class="form-control" id="medzheigth" required
-                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-                oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
-            >
-            <span class="input-group-text">mm</span>
+        <div class="col-md-6 mb-3">
+            <label for="mechanism_id" class="form-label">Gaminio tipas</label>
+            <select class="form-select" id="mechanism_id" data-atributai-target="gamtipasSelect" 
+            data-action="change->atributai#updateFields" required>
+                <option value="" selected disabled>Pasirinkite...</option>
+            </select>
+            <div class="invalid-feedback">Pasirinkite gaminio tipą.</div>
         </div>
-
-        <div id="hemedzheigth-error-message" class="invalid-feedback d-none"></div>
-
-    </div>      
-</div>
-
-
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="valdymas" class="form-label">Valdymas</label>
-        <select class="form-select" id="valdymas" name="valdymas" required>
-            <option value="" selected disabled>Pasirinkite</option>
-            <option value="K">Kairė</option>
-            <option value="D">Dešinė</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite valdymo kryptį.</div>
     </div>
+
+    <div data-atributai-target="fields"></div>
+
 </div>
 
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="stabdymas" class="form-label">Stabdymo mechanizmas</label>
-        <select class="form-select" id="stabdymas" name="stabdymas" required>
-            <option value="" selected disabled>Pasirinkite</option>
-            <option value="T">Taip</option>
-            <option value="N">Ne</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite stabdymo mechanizmą.</div>
-    </div>
-</div>
-
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="atitraukimas" class="form-label">Atgitraukimo kaladėlė</label>
-        <select class="form-select" id="atitraukimas" name="atitraukimas" required>
-            <option value="" selected disabled>Pasirinkite</option>
-            <option value="T">Taip</option>
-            <option value="N">Ne</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite atitraukimo kaladėlę.</div>
-    </div>
-</div>
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="montavimasi" class="form-label">Montavimo vieta</label>
-        <select class="form-select" id="montavimasi" name="montavimasi" required>
-            <option value="" selected disabled>Pasirinkite</option>
-            <option value="R">Ant lango rėmo</option>
-            <option value="L">Į lubas</option>
-            <option value="N">Virš nišos</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite montavimo vietą.</div>
-    </div>
-</div>
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="valoitempimas" class="form-label">Valo įtempimas</label>
-        <select class="form-select" id="valoitempimas" name="valoitempimas" required>
-            <option value="" selected disabled>Pasirinkite</option>
-            <option value="T">Taip</option>
-            <option value="N">Ne</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite valo įtempimą.</div>
-    </div>
-</div>
-
-<div class="row mb-3">
-    <div class="col-md-6 mb-3">
-        <label for="approfiliofiks" class="form-label">Ap. prof. fiksacija</label>
-        <select class="form-select" id="approfiliofiks" name="approfiliofiks" required>
-            <option value="" selected disabled>Pasirinkite</option>
-            <option value="T">Taip</option>
-            <option value="N">Ne</option>
-        </select>
-        <div class="invalid-feedback">Pasirinkite ap. profilio fiksacija.</div>
-    </div>
-</div>
-              
+    
                      
                        
  <div class="d-grid gap-2">
-        <button type="submit" class="btn btn-primary btn-lg">Pateikti užsakymą</button>
-  </div>
-</form>
-  
-   
-    <script>
-        // Form validation
-        (function () {
-            'use strict'
-           
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.querySelectorAll('.needs-validation')
-           
-            // Loop over them and prevent submission
-            Array.prototype.slice.call(forms)
-                .forEach(function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (!form.checkValidity()) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                        } else {
-                            event.preventDefault()
-                            alert('Užsakymas sėkmingai pateiktas!')
-                        }
-                       
-                        form.classList.add('was-validated')
-                    }, false)
-                })
-        })()
-       
-    document.addEventListener('DOMContentLoaded', function() {
-    const widthInput = document.getElementById('width');
-    const heightInput = document.getElementById('height');
-    const medzwidthInput = document.getElementById('medzwidth');
-    const inputs = [widthInput, heightInput,medzwidthInput].filter(input => input !== null); // Filtruojame null reikšmes
-    const agreeRadio = document.getElementById('agree');
-    const disagreeRadio = document.getElementById('disagree');
-    const widthWarningError = document.getElementById('widthWarningError');
+        <button type="button" class="btn btn-success btn-lg" data-action="click->atributai#issaugoti">Išsaugoti</button>
+</div>
 
-    function validateWidthAgreement() {
-        const widthWarningError = document.getElementById('widthWarningError');
-        const agreeRadio = document.getElementById('agree');
-        const disagreeRadio = document.getElementById('disagree');
-
-        // Jei neišrinktas nei "Sutinku", nei "Nesutinku"
-        if (!agreeRadio.checked && !disagreeRadio.checked) {
-            widthWarningError.classList.remove('d-none');
-            return false;
-        } else {
-            widthWarningError.classList.add('d-none');
-            return true;
-        }
-    }
-   
-    document.getElementById('orderForm').addEventListener('submit', function(event) {
-        const widthWarning = document.getElementById('widthWarning');
-        if (!widthWarning.classList.contains('d-none')) {
-            if (!validateWidthAgreement()) {
-                event.preventDefault(); // Neleidžiame pateikti formos
-            }
-        }
-    });
-   
-    inputs.forEach(input => {
-        
-        // Tikrinti, kai vartotojas palieka lauką
-        input.addEventListener('blur', function() {
-            validateInput(this);
-        });
-       
-    });
-   
-    function validateInput(input) {      
-        if (input.id === 'width') {
-          validateWidth(input);
-          return;
-        }else if (input.id === 'medzwidth') {
-            validateMedzwidth(input); 
-            return;
-        }
-        const value = parseInt(input.value);
-        const min = parseInt(input.getAttribute('min'));
-        const max = parseInt(input.getAttribute('max'));      
-       
-        // Jei laukas tuščias, nereikia rodyti klaidos
-        if (input.value === '') {
-            input.classList.remove('is-invalid');
-            input.classList.remove('is-valid');
-            return;
-        }
-       
-        if (isNaN(value)) {
-            showErrorMessage(input, 'Įveskite teisingą skaičių');
-        } else if (value < min) {
-            showErrorMessage(input, 'Reikšmė negali būti mažesnė nei ${min} mm');
-        } else if (value > max) {
-            showErrorMessage(input, 'Laukas negali viršyti ${max} mm');
-        } else {
-            hideErrorMessage(input);
-            input.classList.add('is-valid');
-        }
-    }
-   
-    function showErrorMessage(input, message) {
-        input.classList.add('is-invalid');
-        input.classList.remove('is-valid');
-       
-        // Surasti arba sukurti klaidos pranešimo elementą
-        let errorElement = input.parentElement.querySelector('.error-tooltip');
-        if (!errorElement) {
-            errorElement = document.createElement('div');
-            errorElement.className = 'error-tooltip';
-            errorElement.style.color = 'red';
-            errorElement.style.fontSize = '0.875rem';
-            errorElement.style.marginTop = '0.25rem';
-            input.parentElement.appendChild(errorElement);
-        }
-       
-        errorElement.textContent = message;
-    }
-
-    function clearErrorMessage(element) {
-        element.classList.add('d-none'); // Paslėpiame klaidos pranešimą
-    }
-   
-    function hideErrorMessage(input) {
-        input.classList.remove('is-invalid');
-       
-        const errorElement = input.parentElement.querySelector('.error-tooltip');
-        if (errorElement) {
-            errorElement.textContent = '';
-        }
-    }
-   
-function validateWidth(input) {
-    const value = parseInt(input.value);
-    const min = parseInt(input.getAttribute('data-min-width'));
-    const max = parseInt(input.getAttribute('data-max-width')) || Infinity;
-
-    // Paimti gaminio tipą
-    const mechanismSelect = document.getElementById('mechanism_id');
-    const widthErrorMessage = document.getElementById('width-error-message');
-    const medzwidthErrorMessage = document.getElementById('medzwidth-error-message');
-    const widthWarning = document.getElementById('widthWarning');
-    const agreeRadio = document.getElementById('agree');
-    const disagreeRadio = document.getElementById('disagree');
-
-    const medzwidthField = document.getElementById('medzwidth');
-    const medzwidthValue = medzwidthField ? parseInt(medzwidthField.value) : null;
-
-    // Patikrinti, ar pasirinktas gaminio tipas
-    if (!mechanismSelect.value) {
-        input.classList.add('is-invalid');
-        showErrorMessage(widthErrorMessage, 'Pradžioje pasirinkite gaminio tipą');
-        return; // Nutraukia funkciją, jei gaminio tipas nepasirinktas
-    }
-
-    // Pašalinti visas klaidas
-    input.classList.remove('is-invalid', 'is-valid', 'border-warning');
-    input.setCustomValidity("");
-    hideErrorMessage(widthErrorMessage);
-    widthWarning.classList.add('d-none'); // Paslėpti įspėjimą
-    agreeRadio.removeAttribute('required');
-    disagreeRadio.removeAttribute('required');
-
-    if (medzwidthValue !== null) {
-        const minDifference = 35;
-        const maxDifference = 54;
-        const widthDifference = Math.abs(value - medzwidthValue);  // Naudojame 'value', o ne 'widthValue'
-
-        if (widthDifference < minDifference) {
-            showErrorMessage(medzwidthErrorMessage, `Per mažas skirtumas tarp gaminio ir medžiagos pločių. Mažiausias leistinas skirtumas ${minDifference} mm.`);
-        } else if (widthDifference > maxDifference) {
-            showErrorMessage(medzwidthErrorMessage, `Per didelis skirtumas tarp gaminio ir medžiagos pločių. Didžiausias leistinas skirtumas ${maxDifference} mm.`);
-        } else {
-            clearErrorMessage(medzwidthErrorMessage);
-        }
-    }
-
-    // Patikrinti, ar įvestas teisingas plotis
-    if (isNaN(value)) {
-        input.classList.add('is-invalid');
-        showErrorMessage(widthErrorMessage, 'Įveskite teisingą skaičių');
-    } else if (value < min) {
-        input.classList.add('is-invalid');
-        showErrorMessage(widthErrorMessage, `Reikšmė negali būti mažesnė nei ${min} mm`);
-        input.setCustomValidity(`Reikšmė turi būti tarp ${min} ir ${max}`);
-    } else if (value > max) {
-        widthWarning.classList.remove('d-none'); // Parodome įspėjimą    
-        input.classList.add("border-warning");
-        agreeRadio.setAttribute('required', 'required');
-        disagreeRadio.setAttribute('required', 'required');
-    } else {
-        widthWarning.classList.add('d-none');
-        input.classList.add('is-valid');
-    }
-
-    // Patikrinti, ar pasirinktas sutikimas su įspėjimu
-    agreeRadio.addEventListener('change', validateWidthAgreement);
-    disagreeRadio.addEventListener('change', validateWidthAgreement);
-}
-
-function validateMedzwidth(input) {
-    const value = parseInt(input.value); // Paimti įvestą reikšmę
-    const widthInput = document.getElementById('width');  // Gaminio plotis
-    const widthValue = parseInt(widthInput.value);  // Gaminio pločio reikšmė
-    //const widthErrorMessage = document.getElementById('width-error-message');
-    const widthWarning = document.getElementById('widthWarning');
-    const medzwidthErrorMessage = document.getElementById('medzwidth-error-message');
-    const minDifference = 35;
-    const maxDifference = 54;
-    input.classList.remove('is-invalid', 'is-valid');
-    // Patikrinti, ar medžiagos plotis yra teisingas
-    if (isNaN(value)) {
-        input.classList.add('is-invalid');
-        showErrorMessage(medzwidthErrorMessage, 'Įveskite teisingą skaičių');
-        return;
-    } 
-
-    // Patikrinti skirtumą tarp gaminio ir medžiagos pločių
+<div id="my-table-container" style="display:none;">
+    <div id="my-table" data-atributai-target="UzsakymaiLines">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Užsakymo Nr.</th>
+                    <th>Gaminys</th>
+                    <th>Gaminio tipas</th>
+                    <th>Būsena</th>
+                    <th>Pristatymas</th>
+                    <th>Plotis</th>
+                    <th>Aukštis</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
     
-    const widthDifference = widthValue - value; // Apskaičiuoti skirtumą
+    
+</div>
 
-    if ( widthDifference < minDifference ){
-        showErrorMessage(medzwidthErrorMessage, 'Per mažas skirtumas tarp gaminio ir medžiagos pločių. Mažiausias leistinas skirtumas '+minDifference+' mm.');
-        input.classList.add('is-invalid');
-    } else if (widthDifference > maxDifference) {
-        showErrorMessage(medzwidthErrorMessage, 'Per didelis skirtumas tarp gaminio ir medžiagos pločių. Didžiausias leistinas skirtumas '+maxDifference+' mm.');
-        input.classList.add('is-invalid');
-    } else {       
-        input.classList.add('is-valid');
-        hideErrorMessage(medzwidthErrorMessage);        
-    }
-}
-
-
-   
-
-
-   
-});
-
-
-
-
-
-
-    </script>
-
+  	
+      
 
 {% endblock %}

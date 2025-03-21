@@ -1,0 +1,404 @@
+{% block fields %}
+
+
+<input type="hidden" name="uze_id" value="{{ uze_id|default('') }}">
+
+<div class="row mb-3">
+{% if fields|filter(field => field.gfk_id == 60)|length  > 0 %}
+    <div class="col-md-6 mb-3">
+        <label for="productColor" class="form-label">Gaminio spalva</label>
+        <select id="productColor" name="productColor" class="form-select" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite...</option>
+            {% for spalva in spalvos %}
+                <option value="{{ spalva.id }}">{{ spalva.name }}</option>
+            {% endfor %}
+        </select>
+        <div class="invalid-feedback">Pasirinkite gaminio spalvą.</div>
+    </div>
+{% endif %}
+
+
+{% if fields|filter(field => field.gfk_id == 61)|length  > 0 %}
+    <div class="col-md-6 mb-3" data-controller="atributai">
+            <label for="materialSelect" class="form-label">Lamelių spalva</label>
+            <select id="materialSelect" name="materialSelect" class="form-select" 
+            data-atributai-target="materialSelect" 
+            placeholder="Pradėkite rašyti..." autocomplete="off" required>
+            </select>
+            <div class="invalid-feedback">Pasirinkite medžiagą.</div>
+        </div>
+    </div>
+{% endif %}
+
+
+</div>
+
+<div class="row mb-3">
+{% if fields|filter(field => field.gfk_id == 70)|length  > 0 %}
+    <div class="col-md-3 mb-3">    
+        <label for="width" class="form-label">Gaminio plotis</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="width" name="width" required
+                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
+                data-min-width="{{ minWidth }}"  
+                data-max-width="{{ maxWidth }}"
+                onblur="validateWidth(this);">
+            <span class="input-group-text">mm</span>
+        </div>
+
+        <div id="width-error-message" class="invalid-feedback d-none"></div>
+
+        <div id="widthWarning" class="alert alert-warning d-none">
+            <label class="form-label fw-bold text-danger small">
+                ⚠️ Maksimalus gaminio plotis: <strong>{{ maxWidth }}</strong> mm. Platesniam garantija nesuteikiama.
+            </label>
+            <div>
+                <input type="radio" id="agree" name="width_agreement" value="agree" required>
+                <label for="agree">Sutinku</label>
+            </div>
+            <div>
+                <input type="radio" id="disagree" name="width_agreement" value="disagree" required>
+                <label for="disagree">Nesutinku</label>
+            </div>
+            <div id="widthWarningError" class="text-warning d-none">⚠️ Turite pasirinkti vieną iš variantų!</div>
+        </div>
+    </div>
+{% endif %}   
+{% if fields|filter(field => field.gfk_id == 71)|length  > 0 %}
+    <div class="col-md-3 mb-3">
+        <label for="medzwidth" class="form-label">Medžiagos plotis</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="medzwidth" name="medzwidth" required
+                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
+                onblur="validateMedzwidth(this);">
+            <span class="input-group-text">mm</span>
+        </div>
+        <div id="medzwidth-error-message" class="invalid-feedback d-none"></div>
+    </div>
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 72)|length  > 0 %}
+    <div class="col-md-3 mb-3">
+        <label for="heigth" class="form-label">Gaminio aukštis</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="heigth" name="heigth" required
+                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                onblur="validateinput(this);"              
+            >
+            <span class="input-group-text">mm</span>
+        </div>
+        <div id="heigth-error-message" class="invalid-feedback d-none"></div>
+    </div>
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 73)|length  > 0 %}
+    <div class="col-md-3 mb-3">
+        <label for="medzheigth" class="form-label">Medžiagos aukštis</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="medzheigth" name="medzheigth" required
+                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"  
+                onblur="validateinput(this);"           
+            >
+            <span class="input-group-text">mm</span>
+        </div>
+        <div id="hemedzheigth-error-message" class="invalid-feedback d-none"></div>
+    </div>
+{% endif %}  
+</div>
+
+<div class="d-flex flex-wrap">
+
+{% if fields|filter(field => field.gfk_id == 80)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="valdymas" class="form-label">Valdymas</label>
+        <select class="form-select" id="valdymas" name="valdymas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="K">Kairė</option>
+            <option value="D">Dešinė</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite valdymo kryptį.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 75)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="stabdymas" class="form-label">Stabdymo mechanizmas</label>
+        <select class="form-select" id="stabdymas" name="stabdymas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="P">Reikia</option>
+            <option value="J">Nereikia</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite stabdymo mechanizmą.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 76)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="atitraukimas" class="form-label">Atitraukimo kaladėlė</label>
+        <select class="form-select" id="atitraukimas" name="atitraukimas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite atitraukimo kaladėlę.</div>
+    </div>
+
+{% endif %}  
+
+ 
+{% if fields|filter(field => field.gfk_id == 77)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="montavimasi" class="form-label">Montavimo vieta</label>
+        <select class="form-select" id="montavimasi" name="montavimasi" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="S">Prie stiklo</option>
+            <option value="R">Ant lango rėmo</option>
+            <option value="L">Į lubas</option>
+            <option value="N">Virš nišos</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite montavimo vietą.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 78)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="valoitempimas" class="form-label">Valo įtempimas</label>
+        <select class="form-select" id="valoitempimas" name="valoitempimas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite valo įtempimą.</div>
+    </div>
+
+{% endif %}  
+
+{% if fields|filter(field => field.gfk_id == 79)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="approfiliofiks" class="form-label">Ap. prof. fiksacija</label>
+        <select class="form-select" id="approfiliofiks" name="approfiliofiks" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite ap. profilio fiksacija.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 81)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="valdymotipas" class="form-label">Valdymo tipas</label>
+        <select class="form-select" id="valdymotipas" name="valdymotipas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="V">Virvele</option>
+            <option value="P">Pagaliuku</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite valdymo tipą.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 82)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="karnyzoapdaila" class="form-label">Karnyzo med. apdaila</label>
+        <select class="form-select" id="karnyzoapdaila" name="karnyzoapdaila" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="V">Tiesi apdaila</option>
+            <option value="P">Apdaila kairėje</option>
+            <option value="V">Apdaila dešinėje</option>
+            <option value="P">Apdaila abiejose pusėse</option>
+            <option value="P">Be karnyzo</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite karnyzo med. apdailą.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 83)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="karnyzodangtelis" class="form-label">Karnyzo dangtelis</label>
+        <select class="form-select" id="karnyzodangtelis" name="karnyzodangtelis" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite karnyzo dangtelį.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 85)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="juostelineskopeteles" class="form-label">Juostelinės kopetėlės</label>
+        <select class="form-select" id="juostelineskopeteles" name="juostelineskopeteles" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite juostelines kopetėles.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 86)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="nukreipiamiejitrosai" class="form-label">Nukreipiamieji trosai</label>
+        <select class="form-select" id="nukreipiamiejitrosai" name="nukreipiamiejitrosai" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite nukreipiamuosius trosus.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 87)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="lamelkrastdazymas" class="form-label">Lamelių kraštų dažymas</label>
+        <select class="form-select" id="lamelkrastdazymas" name="lamelkrastdazymas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite lamelių kraštų dažymą.</div>
+    </div>
+ 
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 88)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="tipas" class="form-label">Tipas</label>
+        <select class="form-select" id="tipas" name="tipas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="P">Premium</option>
+            <option value="S">Standart</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite tipą.</div>
+    </div>
+
+{% endif %} 
+  
+{% if fields|filter(field => field.gfk_id == 89)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="kreipianciosios" class="form-label">Kreipiančiosios</label>
+        <select class="form-select" id="kreipianciosios" name="kreipianciosios" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="33">33 mm.</option>
+            <option value="P">Plačios</option>
+            <option value="PS">pusapvalėm stiklajuostėm</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite kreipiančiasias.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 90)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="medpasunkimas" class="form-label">Medžiagos pasunkimas</label>
+        <select class="form-select" id="medpasunkimas" name="medpasunkimas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="T">Taip</option>
+            <option value="N">Ne</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite medžiagos pasunkimą.</div>
+    </div>
+ 
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 91)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="strypas" class="form-label">Strypas</label>
+        <select class="form-select" id="strypas" name="strypas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="10">10 mm.</option>
+            <option value="8">8 mm.</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite strypą.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 92)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="rankenospuse" class="form-label">Rrankenos pusė</label>
+        <select class="form-select" id="rankenospuse" name="rankenospuse" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="K">Keirėje</option>
+            <option value="D">Dešinėje</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite rankenos pusę.</div>
+    </div>
+ 
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 84)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="Skersinis" class="form-label">Skersinis</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="Skersinis" name="Skersinis" required
+                onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"  
+                onblur="validateinput(this);"             
+            >
+            <span class="input-group-text">mm</span>
+            <div class="invalid-feedback">Įveskite skrsinio dydį.</div>
+        </div>
+    </div>      
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 97)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="vyriai" class="form-label">Vyriai</label>
+        <select class="form-select" id="vyriai" name="vyriai" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="P">Premium</option>
+            <option value="S">Standart</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite vyrius.</div>
+    </div>
+
+{% endif %}  
+{% if fields|filter(field => field.gfk_id == 93)|length  > 0 %}
+
+    <div class="col-md-3 mb-3">
+        <label for="uzdarymotipas" class="form-label">Uždarymo tipas</label>
+        <select class="form-select" id="uzdarymotipas" name="uzdarymotipas" onblur="validateinput(this);" required>
+            <option value="" selected disabled>Pasirinkite</option>
+            <option value="P">Magnetiniai pritraukjėjai</option>
+            <option value="J">Magnetinė juosta</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite uždarymo tipą.</div>
+    </div>
+
+{% endif %}  
+ </div>
+</div>
+
+
+
+{% if fields|filter(field => field.gfk_id == 95)|length  > 0 %}
+<div class="row mb-3">
+    <div class="col-md-12 mb-3">
+        <label for="comments" class="form-label">Komentarai gamybai</label>
+        <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Įrašykite komentarus..." ></textarea>
+        <div class="invalid-feedback">Komentarai gamybai</div>
+    </div>
+</div>
+{% endif %}  
+
+
+
+
+{% endblock %}
