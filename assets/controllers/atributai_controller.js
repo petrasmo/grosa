@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
     static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
-        "colorSelect","materialSelect", "fields","uzsId", "UzsakymaiLines"];
+        "colorSelect","materialSelect", "fields","uzsId", "UzsakymaiLines","exampleSelect"];
    
     connect() {
         
@@ -52,13 +52,30 @@ export default class extends Controller {
         if (!mechanismId) return;
         
         try {
-            // Atlikti užklausą į serverį, kad gautume laukus pagal gaminio tipą
             const response = await fetch(`/gaminio-laukai/${mechanismId}`);
-            const data = await response.text(); // Tikėtina, kad serveris grąžins HTML šabloną
+            const data = await response.json();
     
-            // Priklausomai nuo duomenų, įkeliame laukus į DOM
-            this.fieldsTarget.innerHTML = data;
-            
+            const laukupavadinimai = Object.values(data.fieldNames);
+            pasleptiIrIsvalytiLaukus(laukupavadinimai);
+    
+            // Jei yra spalvų – užkraunam
+            if (laukupavadinimai.includes('productColor')) {
+                const spalvos = data.spalvos;
+                const colorSelect = document.getElementById('productColor');
+                colorSelect.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
+                spalvos.forEach(spalva => {
+                    const option = document.createElement('option');
+                    option.value = spalva.id;
+                    option.textContent = spalva.name;
+                    colorSelect.appendChild(option);
+                });
+            }
+    
+            // ✅ ČIA KVIETI CUSTOM EVENT!
+            const laukaiLoadedEvent = new CustomEvent('laukaiLoaded', {
+                bubbles: true
+            });
+            this.element.dispatchEvent(laukaiLoadedEvent); // Iššauni event'ą
     
         } catch (error) {
             console.error("❌ Klaida kraunant laukus:", error);
@@ -187,26 +204,22 @@ export default class extends Controller {
           });
       }
 
-    initMaterialSelect() {
-        if (this.materialSelectTarget.tomselect) {
-            this.materialSelectTarget.tomselect.destroy();
+      initMaterialSelect() {
+        if (this.materialTomSelect) {
+            this.materialTomSelect.destroy();
         }
     
-        const tomSelectInstance = new window.TomSelect(this.materialSelectTarget, {
+        this.materialTomSelect = new TomSelect(this.materialSelectTarget, {
             valueField: "id",
             labelField: "text",
             searchField: "text",
             load: async (query, callback) => {
-                if (query.length < 2) {
-                    return callback();
-                }
-    
+                if (query.length < 2) return callback();
                 try {
                     const response = await fetch(`/uzsakymai/medziagos-paieska?q=${query}`);
                     const data = await response.json();
                     callback(data);
                 } catch (error) {
-                    console.error("Klaida kraunant medžiagas:", error);
                     callback();
                 }
             },
@@ -214,19 +227,17 @@ export default class extends Controller {
             maxOptions: 20
         });
     
-        // Tik BLUR įvykis
-        tomSelectInstance.on('blur', () => {
+        // Blur validacija – perrašyk naudodamas saugomą instance
+        this.materialTomSelect.on('blur', () => {
             const wrapper = this.materialSelectTarget.parentElement.querySelector('.ts-wrapper');
     
-            if (tomSelectInstance.getValue()) {
-                // Jei pasirinkta reikšmė – nuimam klaidą, uždedam žalią
+            if (this.materialTomSelect.getValue()) {
                 this.materialSelectTarget.classList.remove('is-invalid');
                 wrapper?.classList.remove('is-invalid');
     
                 this.materialSelectTarget.classList.add('is-valid');
                 wrapper?.classList.add('is-valid');
             } else {
-                // Jei tuščias – uždedam klaidą
                 this.materialSelectTarget.classList.remove('is-valid');
                 wrapper?.classList.remove('is-valid');
     
@@ -508,36 +519,80 @@ export default class extends Controller {
 
     loadEilute(uzeId) {
         fetch(`/uzsakymai/uzsakymo-eilutes/redaguoti/${uzeId}`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              const eilute = data.data;
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const eilute = data.data;
     
-              // Užpildom formos laukus:
-              this.element.querySelector('#uze_id').value = eilute.uze_id;
-              this.element.querySelector('#gam_id').value = eilute.gaminys_id; // reikės, kad serveris grąžintų id
-              
-              // Užkraunam gaminio tipus pagal gam_id
-              this.updateTypes({ target: { value: eilute.gaminys_id } });
+                    // Užpildom ID laukus
+                    this.element.querySelector('#uze_id').value = eilute.uze_id;
+                    this.element.querySelector('#gam_id').value = eilute.gaminys_id;
     
-              // Palaukiam, kol tipai užsikraus ir užpildom mechanizmą:
-              setTimeout(() => {
-                this.gamtipasSelectTarget.value = eilute.mechanism_id;
-                // Paleidžiam change event, kad užkrautų laukus
-                const event = new Event('change', { bubbles: true });
-                this.gamtipasSelectTarget.dispatchEvent(event);
-              }, 300);
+                    // Užkraunam gaminio tipus
+                    this.updateTypes({ target: { value: eilute.gaminys_id } });
     
-              // Jei yra papildomų laukų:
-              // this.fieldsTarget.innerHTML = ... (jei reikia)
+                    // Užkraunam mechanizmą
+                    setTimeout(() => {
+                        this.gamtipasSelectTarget.value = eilute.mechanism_id;
+                        const event = new Event('change', { bubbles: true });
+                        this.gamtipasSelectTarget.dispatchEvent(event);
+                    }, 200);
     
-            } else {
-              alert('Nepavyko gauti duomenų.');
-            }
-          })
-          .catch(error => {
-            console.error('Klaida gaunant eilutę:', error);
-          });
+                    // ✅ Laukiam laukų užkrovimo ir tik tada pildom laukus
+                    const laukaiHandler = (e) => {
+                        // Užpildom atitraukimą
+                        const atitraukimas = this.element.querySelector('#atitraukimas');
+                        if (atitraukimas) {
+                            atitraukimas.value = eilute.uze_atitraukimo_kaladele;
+                        }
+                        const vyriai = this.element.querySelector('#vyriai');
+                        if (vyriai) {
+                            vyriai.value = eilute.uze_vyriai;
+                        }
+                        const productColor = this.element.querySelector('#productColor');
+                        if (productColor) {
+                            productColor.value = eilute.uze_gaminio_spalva_id;
+                        }
+
+   const materialSelect = this.element.querySelector('#materialSelect');
+
+if (materialSelect && materialSelect.tomselect) {
+    console.log('✅ TomSelect instance rastas');
+
+    const instance = materialSelect.tomselect;
+
+        console.log('✅ TomSelect instance rastas:', instance);
+        const option = { value: '123', text: 'aaaaaa' };
+        // 1. Pridedam option
+        instance.addOption(option);
+        console.log('➕ Pridedam option:', option);
+        // 2. Refresh options (būtina!)
+        instance.refreshOptions(false);
+        // 3. Pridedam į pasirinkimą
+        instance.addItem(option.value);
+        // 4. Papildomai nustatom value
+        instance.setValue(option.value);
+        // 5. Patikrinam DOM ir TomSelect
+        console.log('🔍 DOM select reikšmė:', materialSelect.value);
+        console.log('🔍 TomSelect getValue:', instance.getValue());
+        console.log('🔎 Tekstas inpute:', instance.control_input.value);
+        } else {
+            console.warn('⚠️ TomSelect nėra inicializuotas ant materialSelect!');
+        }         // Panaikinam event listenerį, kad nesikartotų
+                     
+        
+        this.element.removeEventListener('laukaiLoaded', laukaiHandler);
+                    };
+    
+                    this.element.addEventListener('laukaiLoaded', laukaiHandler);
+    
+                } else {
+                    alert('Nepavyko gauti duomenų.');
+                }
+            })
+            .catch(error => {
+                console.error('Klaida gaunant eilutę:', error);
+            });
     }
 
 }

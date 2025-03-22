@@ -39,12 +39,15 @@ class UzsakymaiController extends AbstractController
         $uzs_id = $request->query->get('uzs_id'); 
         $gaminiai = $this->uzsakymaiRepository->getGaminiai();
 
+              
+
         return $this->render('uzsakymai/redaguoti.html.twig', [
             'gaminiai' => $gaminiai, 
             'minWidth' => '',
             'maxWidth' => '',
             'uzs_id' => $uzs_id,
             'uze_id' => '',
+            'spalvos'=>''
         ]);
     }
 
@@ -66,15 +69,7 @@ class UzsakymaiController extends AbstractController
     #[Route('/gaminio-spalvos/{mechanismId}', name: 'gaminio_spalvos', methods: ['GET'])]
     public function getGaminioSpalvos(int $mechanismId, Connection $connection): JsonResponse
     {
-        $sql = "SELECT c.id, c.name 
-                FROM ord_roller_mechanism_color omc
-                JOIN ord_color c ON omc.id_color = c.id
-                WHERE omc.id_mechanism = :mechanismId 
-                AND c.deleted = 0
-                ORDER BY c.name";
-
-        $spalvos = $connection->fetchAllAssociative($sql, ['mechanismId' => $mechanismId]);
-
+        $spalvos = $this->uzsakymaiRepository->getSpalvos($mechanismId);
         return $this->json($spalvos);
     }
 
@@ -128,21 +123,26 @@ class UzsakymaiController extends AbstractController
     }
     
     #[Route('/gaminio-laukai/{mechanismId}', name: 'order_get_fields', methods: ['GET'])]
-    public function getFields(Request $request, Connection $connection,int $mechanismId): Response
+    public function getFields(Request $request, Connection $connection,int $mechanismId): JsonResponse
     {
        // $mechanismId = $request->query->get('mechanismId');
 
 
         // Užklausa gauti laukus pagal gaminio tipą
-        $query = "SELECT gfk_id, gfa_id, gfk_atributas, gfk_tipas 
+        $query = "SELECT gfk_id, gfa_id, gfk_atributas, gfk_tipas ,gfk_lauko_pavadinimas
                 FROM gaminio_frm_atributai_klas
                 JOIN gaminio_frm_atributai
                 ON gfk_id = gfa_gfk_id
                 AND gfa_id_mechanism = :mechanismId
-                AND gfa_deleted IS NULL
+                AND gfa_deleted IS NULL 
                 ORDER BY gfk_rusiavimas";
 
         $fields = $connection->fetchAllAssociative($query, ['mechanismId' => $mechanismId]);
+        $fieldNames = array_map(function($field) {
+            return $field['gfk_lauko_pavadinimas'];
+        }, $fields);
+        $fieldNames = array_filter($fieldNames);
+
 
         $sql = "SELECT a.min_width min_width, a.max_warranty_width max_warranty_width
         FROM ord_roller_mechanism a
@@ -163,19 +163,25 @@ class UzsakymaiController extends AbstractController
                 ORDER BY c.name";
 
         $spalvos = $connection->fetchAllAssociative($sql, ['mechanismId' => $mechanismId]);
+        return new JsonResponse([
+            'fieldNames' => $fieldNames,
+            'minWidth' => $result['min_width'],
+            'maxWidth' => $result['max_warranty_width'],
+            'spalvos' => $spalvos
+        ]);
 //dd($fields);
         /*return $this->json($spalvos);*/
       
 
         // Pasirenkame tinkamą Twig šabloną pagal mechanismId
-        return $this->render('uzsakymai/fields.html.twig', [
+        /*return $this->render('uzsakymai/fields.html.twig', [
             'mechanismId' => $mechanismId,
-            'fields' => $fields,
+            'fieldNames' => $fieldNames,
             'minWidth' => $result['min_width'],
             'maxWidth' => $result['max_warranty_width'],
             'spalvos' => $spalvos
 
-        ]);
+        ]);*/
     }
 
     #[Route('/uzsakymai/issaugoti', name: 'uzsakymai_issaugoti', methods: ['POST'])]
@@ -310,7 +316,12 @@ class UzsakymaiController extends AbstractController
                     uzs_busena, 
                     uzs_pristatymas,
                     uze_gaminio_plotis,
-                    uze_gaminio_aukstis
+                    uze_gaminio_aukstis,
+                    uze_atitraukimo_kaladele,
+                    uze_vyriai,
+                    uze_gaminio_spalva_id,
+                    uze_lameliu_spalva_id,
+                    'AAAA' as uze_medziagos_pavadinimas
                 FROM 
                     uzsakymai, uzsakymo_eilutes, ord_roller_mechanism a, ord_product b
                 WHERE 
@@ -318,6 +329,7 @@ class UzsakymaiController extends AbstractController
                     AND uzs_id = uze_uzs_id 
                     AND uze_id_mechanism = a.id 
                     AND a.id_product = b.id";
+                    //atitraukimas
 
         $eilute = $connection->fetchAssociative($sql, ['uzeId' => $uzeId]);
 

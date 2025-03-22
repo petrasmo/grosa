@@ -29,6 +29,19 @@ class UzsakymaiRepository
         return $this->db->executeQuery($query)->fetchAllAssociative();
     }
 
+    public function getSpalvos(int $Id): array
+    {
+        $query = "SELECT c.id, c.name 
+    FROM ord_roller_mechanism_color omc
+    JOIN ord_color c ON omc.id_color = c.id
+    WHERE omc.id_mechanism = :mechanismId 
+    AND c.deleted = 0
+    ORDER BY c.name";
+
+      
+        return $this->db->executeQuery($query, ['mechanismId' => $Id])->fetchAllAssociative();
+    }
+
     public function getAtributaiPagalGamini(int $gaminioId): array
     {
         $query = "

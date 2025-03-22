@@ -238,3 +238,44 @@ function validateinput(input) {
     
 }
 
+function pasleptiIrIsvalytiLaukus(rodomiLaukai = [], parentDivId = null) {
+    // Surandam tėvinį div'ą, jei nurodytas
+    let parentDiv = null;
+    if (parentDivId) {
+        parentDiv = document.getElementById(parentDivId);
+    }
+
+    // Surandam visus toggle-field laukus TIK toje srityje (arba visur, jei parentDiv nenustatytas)
+    const fields = parentDiv
+        ? parentDiv.querySelectorAll('.toggle-field')
+        : document.querySelectorAll('.toggle-field');
+
+    fields.forEach(el => {
+        const input = el.querySelector('input, select, textarea');
+        if (input) {            
+            // Išvalom reikšmes
+            if (input.tagName === 'SELECT' && input.tomselect) {
+                input.tomselect.clear();
+            } else if (input.tagName === 'SELECT') {
+                input.selectedIndex = 0;
+            } else {
+                input.value = '';
+            }
+        }
+
+        // Paslepiam
+        el.style.display = 'none';
+    });
+
+    // Atvaizduojam tuos, kurių ID perduoti masyve
+    rodomiLaukai.forEach(id => {
+        const el = parentDiv
+            ? parentDiv.querySelector(`#${id}`)
+            : document.getElementById(id);
+
+        if (el) {
+            el.closest('.toggle-field').style.display = 'block';
+        }
+    });
+}
+
