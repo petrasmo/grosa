@@ -77,8 +77,10 @@ class UzsakymaiController extends AbstractController
     public function medziagosPaieska(Request $request, Connection $connection): JsonResponse
     {
         $query = $request->query->get('q', '');
-        if (strlen($query) < 2) {
-            return $this->json([]); // Grąžiname tuščią masyvą, jei per mažai simbolių
+        $mechanismId = (int) $request->query->get('mechanism_id', 0); // GAUNAM MECHANISM ID
+
+        if (strlen($query) < 2 || $mechanismId === 0) {
+            return $this->json([]); // Jei per mažai simbolių arba mechanism_id nėra – grąžinam tuščią
         }
 
         $sql = "SELECT omm.id_material AS id, m2.wholesale_name AS text
@@ -86,16 +88,19 @@ class UzsakymaiController extends AbstractController
                 LEFT JOIN ord_roller_material m ON m.id = omm.id_material
                 LEFT JOIN ord_material_mechanism mm ON mm.id_material = omm.id_material
                 LEFT JOIN ord_roller_material m2 ON m2.id = mm.id_material
-                WHERE mm.id_mechanism = 28
+                WHERE mm.id_mechanism = :mechanism_id
                 AND m2.wholesale_name LIKE :query
-                AND omm.id_mechanism = 28
+                AND omm.id_mechanism = :mechanism_id
                 AND mm.deleted = 0
                 AND m2.deleted = 0
                 AND omm.wholesale = 1
-                order by m2.wholesale_name
-                LIMIT 50"; // Ribojame iki 50 rezultatų
+                ORDER BY m2.wholesale_name
+                LIMIT 50";
 
-        $medziagos = $connection->fetchAllAssociative($sql, ['query' => "%$query%"]);
+        $medziagos = $connection->fetchAllAssociative($sql, [
+            'query' => "%$query%",
+            'mechanism_id' => $mechanismId
+        ]);
 
         return $this->json($medziagos);
     }
@@ -321,7 +326,7 @@ class UzsakymaiController extends AbstractController
                     uze_vyriai,
                     uze_gaminio_spalva_id,
                     uze_lameliu_spalva_id,
-                    'ALZ 16 2 - 01' as uze_medziagos_pavadinimas
+                    'ALZ 16 2 - 01' as uze_lameles_spalva
                 FROM 
                     uzsakymai, uzsakymo_eilutes, ord_roller_mechanism a, ord_product b
                 WHERE 

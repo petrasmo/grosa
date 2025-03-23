@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
     static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
-        "colorSelect","materialSelect", "fields","uzsId", "UzsakymaiLines","exampleSelect"];
+        "colorSelect","materialSelect", "fields","uzsId", "UzsakymaiLines"];
        /* static values = {
             initialValue: String,
             initialText: String,
@@ -33,6 +33,30 @@ export default class extends Controller {
             if (uzsId) {
                 this.loadTable(uzsId);
             }
+        }
+
+        if (this.hasGamtipasSelectTarget) {
+            this.gamtipasSelectTarget.addEventListener('change', (e) => {
+                const mechanismId = e.target.value;
+                const autocompleteElement = document.querySelector('[data-controller="select2"]');
+        
+                if (autocompleteElement) {
+                    const autocompleteController = this.application.getControllerForElementAndIdentifier(
+                        autocompleteElement,
+                        'select2'
+                    );
+        
+                    console.log('MechanismID:', mechanismId);
+                    console.log('autocompleteController:', autocompleteController);
+        
+                    if (autocompleteController) {
+                        autocompleteController.mechanismIdValue = mechanismId;
+                        console.log(`✅ Mechanism ID nustatytas: ${mechanismId}`);
+                    } else {
+                        console.warn('⚠️ Nerastas select2 controlleris!');
+                    }
+                }
+            });
         }
 
         
@@ -85,6 +109,8 @@ export default class extends Controller {
                     colorSelect.appendChild(option);
                 });
             }
+
+            
     
             // ✅ ČIA KVIETI CUSTOM EVENT!
             const laukaiLoadedEvent = new CustomEvent('laukaiLoaded', {
@@ -569,10 +595,18 @@ export default class extends Controller {
                             productColor.value = eilute.uze_gaminio_spalva_id;
                         }
 
-                        document.querySelector('#materialSelect').dispatchEvent(new CustomEvent('nustatytiReiksme', {
+                        /*document.querySelector('#materialSelect').dispatchEvent(new CustomEvent('nustatytiReiksme', {
                             detail: { value: "123", text: "aaa" },
                             bubbles: true
-                          }));                        
+                          })); */
+                          
+                          const materialInput = document.querySelector('#materialInput');
+                            if (materialInput) {
+                            materialInput.dispatchEvent(new CustomEvent('nustatytiReiksme', {
+                                detail: { value: "123", text: "aaa" },
+                                bubbles: true
+                            }));
+                            }
  
                      
         

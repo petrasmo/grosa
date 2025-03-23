@@ -75,42 +75,35 @@
             <div class="invalid-feedback">Pasirinkite gaminio spalvą.</div>
         </div>
 
-         <div class="col-md-6 mb-3" >
-                <label for="materialSelect" class="form-label">Lamelių spalva</label>
-                <select id="materialSelect" name="materialSelect" class="form-select"                 
-                data-controller="tomselect" data-tomselect-target="select"
-                placeholder="Pradėkite rašyti..." autocomplete="off" required>
-                </select>
-                <div class="invalid-feedback">Pasirinkite medžiagą.</div>
-            </div>
+     <div class="col-md-6 mb-3">
+    <label for="materialInput" class="form-label">Lamelių spalva</label>
+    <div data-controller="select2" data-select2-mechanism-id-value="0" class="position-relative">
+
+        <!-- Input -->
+        <input type="text" id="materialInput"
+            class="form-control"
+            data-select2-target="input"
+            data-url="/uzsakymai/medziagos-paieska"
+            autocomplete="off"
+            placeholder="Pradėkite rašyti...">
+
+        <!-- Spinner -->
+        <div class="spinner-border text-primary d-none position-absolute top-0 end-0 m-2" role="status"
+            data-select2-target="spinner" style="width: 1.5rem; height: 1.5rem;">
+            <span class="visually-hidden">Kraunama...</span>
         </div>
+
+        <!-- Dropdown sąrašas -->
+        <ul class="list-group position-absolute w-100 d-none autocomplete-list z-3" 
+            data-select2-target="list"></ul>
+
+    </div>
+</div>
+
+</div>
 
 
 <div >
-   
-<select id="exampleSelect" data-controller="tomselect" data-tomselect-target="select">
-</select>
-
-
-
-
-
-{# <div class="col-md-6 mb-3 "  >
-                <label for="exampleSelect" class="form-label">Example spalva</label>
-                <select id="exampleSelect" name="exampleSelect" class="form-select" 
-                data-atributai-target="exampleSelect" 
-                placeholder="Pradėkite rašyti..." autocomplete="off" required>
-                </select>
-                <div class="invalid-feedback">Pasirinkite medžiagą.</div>
-            </div>
-        </div> #}
-
-
-
-
-
-
-
 
 
     </div>
