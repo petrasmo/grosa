@@ -75,15 +75,44 @@
             <div class="invalid-feedback">Pasirinkite gaminio spalvą.</div>
         </div>
 
-        <div class="col-md-6 mb-3 toggle-field" style="display: none;">
+         <div class="col-md-6 mb-3" >
                 <label for="materialSelect" class="form-label">Lamelių spalva</label>
-                <select id="materialSelect" name="materialSelect" class="form-select" 
-                data-atributai-target="materialSelect" 
+                <select id="materialSelect" name="materialSelect" class="form-select"                 
+                data-controller="tomselect" data-tomselect-target="select"
                 placeholder="Pradėkite rašyti..." autocomplete="off" required>
                 </select>
                 <div class="invalid-feedback">Pasirinkite medžiagą.</div>
             </div>
         </div>
+
+
+<div >
+   
+<select id="exampleSelect" data-controller="tomselect" data-tomselect-target="select">
+</select>
+
+
+
+
+
+{# <div class="col-md-6 mb-3 "  >
+                <label for="exampleSelect" class="form-label">Example spalva</label>
+                <select id="exampleSelect" name="exampleSelect" class="form-select" 
+                data-atributai-target="exampleSelect" 
+                placeholder="Pradėkite rašyti..." autocomplete="off" required>
+                </select>
+                <div class="invalid-feedback">Pasirinkite medžiagą.</div>
+            </div>
+        </div> #}
+
+
+
+
+
+
+
+
+
     </div>
 
     <div class="row mb-3">
@@ -374,7 +403,7 @@
             </div>
         </div>
 
-    <button onclick="pasleptiIrIsvalytiLaukus(['productColor', 'materialSelect', 'width', 'medzwidth', 'heigth', 'medzheigth', 'stabdymas', 'atitraukimas', 'valdymas', 'comments'])" class="btn btn-primary">
+    <button onclick="nustatyti(this)" class="btn btn-primary">
         Paslėpti viską, bet rodyti Plotį
     </button>        
     
@@ -397,6 +426,4 @@
     
     
 </div>
-     
-
 {% endblock %}

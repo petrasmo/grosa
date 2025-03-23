@@ -321,7 +321,7 @@ class UzsakymaiController extends AbstractController
                     uze_vyriai,
                     uze_gaminio_spalva_id,
                     uze_lameliu_spalva_id,
-                    'AAAA' as uze_medziagos_pavadinimas
+                    'ALZ 16 2 - 01' as uze_medziagos_pavadinimas
                 FROM 
                     uzsakymai, uzsakymo_eilutes, ord_roller_mechanism a, ord_product b
                 WHERE 

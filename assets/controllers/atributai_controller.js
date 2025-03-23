@@ -2,23 +2,31 @@ import { Controller } from "@hotwired/stimulus";
 
 
 
+
 export default class extends Controller {
     static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
         "colorSelect","materialSelect", "fields","uzsId", "UzsakymaiLines","exampleSelect"];
-   
+       /* static values = {
+            initialValue: String,
+            initialText: String,
+            options: Object
+        };*/
     connect() {
-        
         if (this.element.dataset.initialized) {
            // console.warn("⚠️ Atributai valdiklis jau buvo prijungtas!");
             return;
         }
         this.element.dataset.initialized = "true";
         
-        if (this.hasMaterialSelectTarget) {
-        this.initMaterialSelect();   
+      /* if (this.hasMaterialSelectTarget) {
+           
+        this.initMaterialSelect();    a a dsa ds a
         // Užklausos užkrovimas pagal gaminio tipą, kai pelė užkelia žymeklį ant lauko
-        this.setupWidthField();
-        }
+        this.setupWidthField(); asa saa adsas
+        }*/
+       
+    
+        
         if (this.hasUzsIdTarget) {
             const uzsId = this.uzsIdTarget.value;
     
@@ -26,6 +34,9 @@ export default class extends Controller {
                 this.loadTable(uzsId);
             }
         }
+
+        
+
         //console.log("✅ Atributai valdiklis prijungtas!");
     }
 
@@ -36,6 +47,10 @@ export default class extends Controller {
             this.tableContainerTarget.classList.add("d-none");
             return;
         }
+
+        
+
+
 
         try {
             const response = await fetch(`/formos/atributai?gaminys_id=${gaminysId}`);
@@ -204,7 +219,7 @@ export default class extends Controller {
           });
       }
 
-      initMaterialSelect() {
+      /*initMaterialSelect() {
         if (this.materialTomSelect) {
             this.materialTomSelect.destroy();
         }
@@ -245,7 +260,7 @@ export default class extends Controller {
                 wrapper?.classList.add('is-invalid');
             }
         });
-    }
+    }*/
 
     populateTable(data) {
         this.tableBodyTarget.innerHTML = ""; // Išvalome esamus duomenis
@@ -402,7 +417,7 @@ export default class extends Controller {
         }
     
         // Išvalome medžiagą ir atstatome TomSelect
-        if (this.hasMaterialSelectTarget) {
+       /* if (this.hasMaterialSelectTarget) {
             console.log("🧹 Valome medžiagos lauką...");
     
             if (this.materialSelectTarget.tomselect) {
@@ -413,7 +428,7 @@ export default class extends Controller {
             // Nustatome pradinę būseną
             this.materialSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
             this.initMaterialSelect();
-        }
+        }*/
     }
 
     issaugoti(event) {
@@ -554,31 +569,11 @@ export default class extends Controller {
                             productColor.value = eilute.uze_gaminio_spalva_id;
                         }
 
-   const materialSelect = this.element.querySelector('#materialSelect');
-
-if (materialSelect && materialSelect.tomselect) {
-    console.log('✅ TomSelect instance rastas');
-
-    const instance = materialSelect.tomselect;
-
-        console.log('✅ TomSelect instance rastas:', instance);
-        const option = { value: '123', text: 'aaaaaa' };
-        // 1. Pridedam option
-        instance.addOption(option);
-        console.log('➕ Pridedam option:', option);
-        // 2. Refresh options (būtina!)
-        instance.refreshOptions(false);
-        // 3. Pridedam į pasirinkimą
-        instance.addItem(option.value);
-        // 4. Papildomai nustatom value
-        instance.setValue(option.value);
-        // 5. Patikrinam DOM ir TomSelect
-        console.log('🔍 DOM select reikšmė:', materialSelect.value);
-        console.log('🔍 TomSelect getValue:', instance.getValue());
-        console.log('🔎 Tekstas inpute:', instance.control_input.value);
-        } else {
-            console.warn('⚠️ TomSelect nėra inicializuotas ant materialSelect!');
-        }         // Panaikinam event listenerį, kad nesikartotų
+                        document.querySelector('#materialSelect').dispatchEvent(new CustomEvent('nustatytiReiksme', {
+                            detail: { value: "123", text: "aaa" },
+                            bubbles: true
+                          }));                        
+ 
                      
         
         this.element.removeEventListener('laukaiLoaded', laukaiHandler);
@@ -595,4 +590,5 @@ if (materialSelect && materialSelect.tomselect) {
             });
     }
 
+   
 }
