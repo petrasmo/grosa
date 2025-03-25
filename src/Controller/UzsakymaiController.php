@@ -197,6 +197,13 @@ class UzsakymaiController extends AbstractController
         if ($duomenys === null) {
             return new JsonResponse(['success' => false, 'message' => 'Blogas JSON!'], 400);
         }
+/*dd($duomenys);
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Išsaugota sėkmingai!',
+            'uzs_Id' => 1,
+            'uze_Id' => 1
+        ]);*/
 
         $params = [
             'p_uzs_nr' => 'Pirmas',
@@ -207,9 +214,11 @@ class UzsakymaiController extends AbstractController
             'p_uze_id_mechanism' => $duomenys['mechanism_id'] ?? null,
             'p_uze_vyriai' => $duomenys['vyriai'] ?? null,
             'p_uze_gaminio_spalva_id' => $duomenys['productColor'] ?? null,
-            'p_uze_lameliu_spalva_id' => $duomenys['materialSelect'] ?? null,
+            'p_uze_lameliu_spalva_id' => $duomenys['materialId'] ?? null,
             'p_uze_gaminio_plotis' => $duomenys['width'] ?? null,
-            'p_uze_medziagos_plotis' => $duomenys['medzwidth'] ?? null,
+            
+            'p_uze_medziagos_plotis' => $duomenys['medzwidth'] ?? null,   
+            'p_uze_gam_plocio_sutikimas' => $duomenys['width_agreement'] ?? null,         
             'p_uze_gaminio_aukstis' => $duomenys['heigth'] ?? null,
             'p_uze_medziagos_aukstis' => $duomenys['medzheigth'] ?? null,
             'p_uze_stabdymo_mechanizmas' => $duomenys['stabdymas'] ?? '',
@@ -282,6 +291,33 @@ class UzsakymaiController extends AbstractController
         }
     }
 
+    #[Route('/uzsakymai/uzsakymo-eilutes/salinti', name: 'uzsakymo_eilutes_salinti', methods: ['POST'])]
+    public function salintileitute(Request $request, Connection $connection): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $uzeId = $data['uze_id'] ?? null;
+        $uzsId = $data['uzs_id'] ?? null;
+
+        if (!$uzeId || !$uzsId) {
+            return new JsonResponse(['success' => false, 'message' => 'Trūksta ID.']);
+        }
+
+        try {
+            // Paprasta SQL užklausa
+            $sql = 'UPDATE uzsakymo_eilutes SET uze_deleted = 1 WHERE uze_id = :uze_id AND uze_uzs_id = :uzs_id';
+            $stmt = $connection->prepare($sql);
+            $stmt->execute([
+                'uze_id' => $uzeId,
+                'uzs_id' => $uzsId,
+            ]);
+
+            return new JsonResponse(['success' => true, 'message' => 'Eilutė pašalinta.', 'uzs_Id' => $uzsId]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Klaida šalinant: ' . $e->getMessage()]);
+        }
+    }
+
     #[Route('/uzsakymai/uzsakymo-eilutes/{uzsId}', name: 'uzsakymo_eilutes', methods: ['GET'])]
     public function getUzsakymoEilutes(int $uzsId, Connection $connection): JsonResponse
     {
@@ -300,7 +336,8 @@ class UzsakymaiController extends AbstractController
                     uzs_id = uze_uzs_id 
                     AND uzs_id = :uzsId
                     AND uze_id_mechanism = a.id 
-                    AND a.id_product = b.id";
+                    AND a.id_product = b.id
+                    and uze_deleted =0 ";
 
         $eilutes = $connection->fetchAllAssociative($sql, ['uzsId' => $uzsId]);
 
@@ -311,29 +348,38 @@ class UzsakymaiController extends AbstractController
     public function redaguotiEilute(int $uzeId, Connection $connection): JsonResponse
     {
         $sql = "SELECT 
-                    uze_id,
-                    uzs_id,
-                    uzs_id AS uzs_nr,
-                    a.id_product AS gaminys_id,
-                    a.id AS mechanism_id,
-                    b.name AS gaminys,
-                    a.name AS gaminio_tipas,
-                    uzs_busena, 
-                    uzs_pristatymas,
-                    uze_gaminio_plotis,
-                    uze_gaminio_aukstis,
-                    uze_atitraukimo_kaladele,
-                    uze_vyriai,
-                    uze_gaminio_spalva_id,
-                    uze_lameliu_spalva_id,
-                    'ALZ 16 2 - 01' as uze_lameles_spalva
-                FROM 
-                    uzsakymai, uzsakymo_eilutes, ord_roller_mechanism a, ord_product b
-                WHERE 
-                    uze_id = :uzeId
-                    AND uzs_id = uze_uzs_id 
-                    AND uze_id_mechanism = a.id 
-                    AND a.id_product = b.id";
+            uze_id,
+            uzs_id,
+            uzs_id AS uzs_nr,
+            a.id_product AS gaminys_id,
+            a.id AS mechanism_id,
+            b.name AS gaminys,
+            a.name AS gaminio_tipas,
+            uzs_busena, 
+            uzs_pristatymas,
+            uze_gaminio_plotis,
+            uze_gam_plocio_sutikimas,
+            min_width, 
+            max_warranty_width,
+            uze_gaminio_aukstis,
+            uze_atitraukimo_kaladele,
+            uze_vyriai,
+            uze_gaminio_spalva_id,
+            uze_lameliu_spalva_id,
+            material.wholesale_name AS uze_lameles_spalva,
+            uze_medziagos_plotis,
+            uze_medziagos_aukstis,
+            uze_stabdymo_mechanizmas,
+            uze_valdymas_puse,
+            uze_komentarai_gamybai
+        FROM 
+            uzsakymo_eilutes
+        INNER JOIN uzsakymai ON uzs_id = uze_uzs_id
+        INNER JOIN ord_roller_mechanism a ON uze_id_mechanism = a.id
+        INNER JOIN ord_product b ON a.id_product = b.id
+        LEFT JOIN ord_roller_material material ON material.id = uze_lameliu_spalva_id
+        WHERE 
+            uze_id = :uzeId";
                     //atitraukimas
 
         $eilute = $connection->fetchAssociative($sql, ['uzeId' => $uzeId]);

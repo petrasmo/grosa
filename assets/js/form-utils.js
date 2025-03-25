@@ -77,12 +77,10 @@ window.updateTableRow = function(data) {
 };
 
 function validateWidth(input) {
-
     const value = parseInt(input.value);
     const min = parseInt(input.getAttribute('data-min-width'));
     const max = parseInt(input.getAttribute('data-max-width')) || Infinity;
 
-    // Paimti gaminio tipą
     const mechanismSelect = document.getElementById('mechanism_id');
     const widthErrorMessage = document.getElementById('width-error-message');
     const medzwidthErrorMessage = document.getElementById('medzwidth-error-message');
@@ -93,57 +91,75 @@ function validateWidth(input) {
     const medzwidthField = document.getElementById('medzwidth');
     const medzwidthValue = medzwidthField ? parseInt(medzwidthField.value) : null;
 
-    // Patikrinti, ar pasirinktas gaminio tipas
+    // 🔴 1. Validacija: ar pasirinktas gaminio tipas
     if (!mechanismSelect.value) {
         input.classList.add('is-invalid');
         showErrorMessage(widthErrorMessage, 'Pradžioje pasirinkite gaminio tipą');
-        return; // Nutraukia funkciją, jei gaminio tipas nepasirinktas
+        return;
     }
 
-    // Pašalinti visas klaidas
+    // 🧼 2. Išvalyti buvusias klaidas
     input.classList.remove('is-invalid', 'is-valid', 'border-warning');
-    input.setCustomValidity("");
+    input.setCustomValidity('');
     hideErrorMessage(widthErrorMessage);
-    widthWarning.classList.add('d-none'); // Paslėpti įspėjimą
-    agreeRadio.removeAttribute('required');
-    disagreeRadio.removeAttribute('required');
+    widthWarning.classList.add('d-none');
 
-    if (medzwidthValue !== null) {
-        const minDifference = 35;
-        const maxDifference = 54;
-        const widthDifference = Math.abs(value - medzwidthValue);  // Naudojame 'value', o ne 'widthValue'
+    // 🔍 3. Patikrinam medžiagos pločio skirtumą
+    if (medzwidthValue !== null && !isNaN(value)) {
+        const minDiff = 35;
+        const maxDiff = 54;
+        const diff = Math.abs(value - medzwidthValue);
 
-        if (widthDifference < minDifference) {
-            showErrorMessage(medzwidthErrorMessage, `Per mažas skirtumas tarp gaminio ir medžiagos pločių. Mažiausias leistinas skirtumas ${minDifference} mm.`);
-        } else if (widthDifference > maxDifference) {
-            showErrorMessage(medzwidthErrorMessage, `Per didelis skirtumas tarp gaminio ir medžiagos pločių. Didžiausias leistinas skirtumas ${maxDifference} mm.`);
+        if (diff < minDiff) {
+            showErrorMessage(medzwidthErrorMessage, `Per mažas skirtumas tarp gaminio ir medžiagos pločių. Mažiausias leistinas skirtumas ${minDiff} mm.`);
+        } else if (diff > maxDiff) {
+            showErrorMessage(medzwidthErrorMessage, `Per didelis skirtumas tarp gaminio ir medžiagos pločių. Didžiausias leistinas skirtumas ${maxDiff} mm.`);
         } else {
             clearErrorMessage(medzwidthErrorMessage);
         }
     }
 
-    // Patikrinti, ar įvestas teisingas plotis
+    // ❌ 4. Netinkamas skaičius arba per mažas
     if (isNaN(value)) {
         input.classList.add('is-invalid');
         showErrorMessage(widthErrorMessage, 'Įveskite teisingą skaičių');
-    } else if (value < min) {
-        input.classList.add('is-invalid');
-        showErrorMessage(widthErrorMessage, `Reikšmė negali būti mažesnė nei ${min} mm`);
-        input.setCustomValidity(`Reikšmė turi būti tarp ${min} ir ${max}`);
-    } else if (value > max) {
-        widthWarning.classList.remove('d-none'); // Parodome įspėjimą    
-        input.classList.add("border-warning");
-        agreeRadio.setAttribute('required', 'required');
-        disagreeRadio.setAttribute('required', 'required');
-    } else {
-        widthWarning.classList.add('d-none');
-        input.classList.add('is-valid');
+        return;
     }
 
-    // Patikrinti, ar pasirinktas sutikimas su įspėjimu
-    agreeRadio.addEventListener('change', validateWidthAgreement);
-    disagreeRadio.addEventListener('change', validateWidthAgreement);
+    if (value < min) {
+        input.classList.add('is-invalid');
+        showErrorMessage(widthErrorMessage, `Reikšmė negali būti mažesnė nei ${min} mm.`);
+        input.setCustomValidity(`Mažiausias leistinas: ${min} mm.`);
+        return;
+    }
+
+    // ⚠️ 5. Didesnis nei leidžiamas
+    if (value > max) {
+        widthWarning.classList.remove('d-none');
+        input.classList.add('border-warning');
+
+        agreeRadio.setAttribute('required', 'required');
+        disagreeRadio.setAttribute('required', 'required');
+
+        // Tikrinam ar pasirinktas sutikimas
+        if (!agreeRadio.checked && !disagreeRadio.checked) {
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+            showErrorMessage(widthErrorMessage, 'Turite pasirinkti, ar sutinkate su didesniu pločiu.');
+            return;
+        }
+
+        // Jei pasirinkta – laikom validu
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        return;
+    }
+
+    // ✅ 6. Viskas gerai
+    input.classList.add('is-valid');
 }
+
+
 function showErrorMessage(input, message) {
         input.classList.add('is-invalid');
         input.classList.remove('is-valid');
@@ -190,38 +206,43 @@ function showErrorMessage(input, message) {
         }
     }
 
-function validateMedzwidth(input) {
-    const value = parseInt(input.value); // Paimti įvestą reikšmę
-    const widthInput = document.getElementById('width');  // Gaminio plotis
-    const widthValue = parseInt(widthInput.value);  // Gaminio pločio reikšmė
-    //const widthErrorMessage = document.getElementById('width-error-message');
-    const widthWarning = document.getElementById('widthWarning');
-    const medzwidthErrorMessage = document.getElementById('medzwidth-error-message');
-    const minDifference = 35;
-    const maxDifference = 54;
-    input.classList.remove('is-invalid', 'is-valid');
-    // Patikrinti, ar medžiagos plotis yra teisingas
-    if (isNaN(value)) {
-        input.classList.add('is-invalid');
-        showErrorMessage(medzwidthErrorMessage, 'Įveskite teisingą skaičių');
-        return;
-    } 
-
-    // Patikrinti skirtumą tarp gaminio ir medžiagos pločių
+    function validateMedzwidth(input) {
+        const value = parseInt(input.value); // Medžiagos plotis
+        const widthInput = document.getElementById('width'); // Gaminio plotis
+        const widthValue = parseInt(widthInput.value); // Gaminio pločio reikšmė
+        const medzwidthErrorMessage = document.getElementById('medzwidth-error-message');
     
-    const widthDifference = widthValue - value; // Apskaičiuoti skirtumą
-
-    if ( widthDifference < minDifference ){
-        showErrorMessage(medzwidthErrorMessage, 'Per mažas skirtumas tarp gaminio ir medžiagos pločių. Mažiausias leistinas skirtumas '+minDifference+' mm.');
-        input.classList.add('is-invalid');
-    } else if (widthDifference > maxDifference) {
-        showErrorMessage(medzwidthErrorMessage, 'Per didelis skirtumas tarp gaminio ir medžiagos pločių. Didžiausias leistinas skirtumas '+maxDifference+' mm.');
-        input.classList.add('is-invalid');
-    } else {       
-        input.classList.add('is-valid');
-        hideErrorMessage(medzwidthErrorMessage);        
+        const minDifference = 35;
+        const maxDifference = 54;
+    
+        // Išvalom klases ir žinutę
+        input.classList.remove('is-invalid', 'is-valid');
+        hideErrorMessage(medzwidthErrorMessage);
+    
+        // Tikrinam ar abu reikšmės įvestos
+        if (isNaN(value) || isNaN(widthValue)) {
+            if (isNaN(value)) {
+                input.classList.add('is-invalid');
+                showErrorMessage(medzwidthErrorMessage, 'Įveskite teisingą skaičių');
+            }
+            return;
+        }
+    
+        // Apskaičiuojam skirtumą
+        const widthDifference = widthValue - value;
+    
+        if (widthDifference < minDifference) {
+            input.classList.add('is-invalid');
+            showErrorMessage(medzwidthErrorMessage, 'Per mažas skirtumas tarp gaminio ir medžiagos pločių. Mažiausias leistinas skirtumas ' + minDifference + ' mm.');
+        } else if (widthDifference > maxDifference) {
+            input.classList.add('is-invalid');
+            showErrorMessage(medzwidthErrorMessage, 'Per didelis skirtumas tarp gaminio ir medžiagos pločių. Didžiausias leistinas skirtumas ' + maxDifference + ' mm.');
+        } else {
+            input.classList.add('is-valid');
+            hideErrorMessage(medzwidthErrorMessage);
+        }
     }
-}
+    
 
 function validateinput(input) {  
     // Jei laukas tuščias, nereikia rodyti klaidos

@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
     static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
-        "colorSelect","materialSelect", "fields","uzsId", "UzsakymaiLines"];
+        "colorSelect","materialSelect", "fields","uzsId","uzeId", "UzsakymaiLines"];
        /* static values = {
             initialValue: String,
             initialText: String,
@@ -18,15 +18,7 @@ export default class extends Controller {
         }
         this.element.dataset.initialized = "true";
         
-      /* if (this.hasMaterialSelectTarget) {
-           
-        this.initMaterialSelect();    a a dsa ds a
-        // Užklausos užkrovimas pagal gaminio tipą, kai pelė užkelia žymeklį ant lauko
-        this.setupWidthField(); asa saa adsas
-        }*/
-       
-    
-        
+          
         if (this.hasUzsIdTarget) {
             const uzsId = this.uzsIdTarget.value;
     
@@ -59,9 +51,6 @@ export default class extends Controller {
             });
         }
 
-        
-
-        //console.log("✅ Atributai valdiklis prijungtas!");
     }
 
     async loadAttributes() {
@@ -71,10 +60,6 @@ export default class extends Controller {
             this.tableContainerTarget.classList.add("d-none");
             return;
         }
-
-        
-
-
 
         try {
             const response = await fetch(`/formos/atributai?gaminys_id=${gaminysId}`);
@@ -362,6 +347,7 @@ export default class extends Controller {
         console.log("✅ Siunčiama tik viena užklausa į serverį:", formData);
 
         try {
+           
             const response = await fetch("/formos/atributai/issaugoti", {
                 method: "POST",
                 headers: {
@@ -377,6 +363,8 @@ export default class extends Controller {
             }
 
             this.showMessage(data.message, "success");
+
+            
             this.loadAttributes(); // Perkrauna lentelę
 
         } catch (error) {
@@ -458,73 +446,87 @@ export default class extends Controller {
     }
 
     issaugoti(event) {
-        // Surandam visus input/select su required
-
         let valid = true;
-        const inputs = this.element.querySelectorAll('select[required], input[required], textarea[required]')
-        
-        const materialSelectElement = document.getElementById('materialSelect');
-        const tomSelectInstance = materialSelectElement?.tomselect;
 
-        if (tomSelectInstance) {
-            const wrapper = materialSelectElement.parentElement.querySelector('.ts-wrapper'); // randa TomSelect wrapper
-        
-            if (!tomSelectInstance.getValue()) {
-                valid = false;
-                materialSelectElement.classList.add('is-invalid'); // pridedi Bootstrap klase select'ui (gerai turėti)
-                if (wrapper) {
-                    wrapper.classList.add('is-invalid'); // pridedi klase ir matomam TomSelect input'ui!
-                }
-            } else {
-                materialSelectElement.classList.remove('is-invalid');
-                if (wrapper) {
-                    wrapper.classList.remove('is-invalid');
-                    wrapper.classList.add('is-valid'); // jei nori rodyti žalią apvadą
-                }
-            }
+    // Surandam visus matomus input, select, textarea laukus
+    const inputs = this.element.querySelectorAll('input, select, textarea');
+
+    inputs.forEach(input => {
+        if (input.offsetParent === null || !input.required) 
+            return;
+
+        // Paleidžiam jau egzistuojančią tavo funkciją
+       
+        if (input.name === 'medzwidth') {
+            validateMedzwidth(input);
+        } else if (input.name === 'width') {
+            validateWidth(input);
+        } else {
+            validateinput(input);
         }
 
-        inputs.forEach(input => {
-            if (!input.checkValidity()) {
-                valid = false
-                input.classList.add('is-invalid')
-            } else {
-                input.classList.remove('is-invalid')
-                input.classList.add('is-valid')
-            }
-        })
-
-
-        if (!valid) {
-            event.preventDefault()
-            event.stopPropagation()
-            return
+        // Jei kažkuris laukas turi klasę is-invalid – validacija bloga
+        if (input.classList.contains('is-invalid')) {
+            valid = false;
         }
- 
-        // Jei viskas validu - surenkam duomenis ir siunčiam fetch
-        /*const gam_id = this.selectTarget.value
-        const mechanism_id = this.mechanismSelectTarget.value*/
+    });
+
+    // Papildomai tikrinam specialius atvejus (pvz. medžiagos input)
+    const materialInput = document.getElementById('materialInput');
+    if (materialInput && materialInput.offsetParent !== null) {
+        validateinput(materialInput);
+        if (materialInput.classList.contains('is-invalid')) {
+            valid = false;
+        }
+    }
+
+    if (!valid) {
+        event.preventDefault();
+        event.stopPropagation();
+        alert('Forma turi klaidų. Patikrinkite laukus.');
+        return;
+    }
+
+
+
+
+
+
+
+    
+    
         const gam_id = document.getElementById('gam_id')?.value;
         const mechanism_id = document.getElementById('mechanism_id')?.value;
-
+    
         let papildomiDuomenys = {}
-        this.fieldsTarget.querySelectorAll('input, select, textarea').forEach(el => {
+        /*this.fieldsTarget.querySelectorAll('input, select, textarea').forEach(el => {
             papildomiDuomenys[el.name] = el.value
-        })
+        });*/
 
+        this.fieldsTarget.querySelectorAll('input, select, textarea').forEach(el => {
+            if (el.type === 'radio') {
+                // Tik jei pirmą kartą matom tokį name, priskiriam reikšmę
+                if (!(el.name in papildomiDuomenys)) {
+                    const checked = this.element.querySelector(`input[name="${el.name}"]:checked`);
+                    papildomiDuomenys[el.name] = checked ? checked.value : '';
+                }
+            } else {
+                papildomiDuomenys[el.name] = el.value;
+            }
+        });
+
+    
         const uzsIdInput = this.element.querySelector('#uzs_id');
         const uzeIdInput = this.element.querySelector('#uze_id');
-
+    
         const data = {
             gam_id: gam_id,
             mechanism_id: mechanism_id,
-            uzs_id: uzsIdInput.value, // leis būti tuščiam
-            uze_id: uzeIdInput.value,
+            uzs_id: this.uzsIdTarget.value,
+            uze_id: this.uzeIdTarget.value,
             ...papildomiDuomenys
         }
-
-        
-      
+    
         fetch('/uzsakymai/issaugoti', {
             method: 'POST',
             headers: {
@@ -535,26 +537,75 @@ export default class extends Controller {
         })
         .then(response => {
             if (!response.ok) throw new Error("Tinklo klaida");
-            return response.json(); // Grąžina JSON, kuriame ir HTML, ir ID
+            return response.json();
         })
         .then(json => {
-            // Užpildom hidden laukus
-       
             if (uzsIdInput && json.uzs_Id) uzsIdInput.value = json.uzs_Id;
             if (uzeIdInput && json.uze_Id) uzeIdInput.value = json.uze_Id;
-        
-            // Atvaizduojam lentelės HTML
-            //this.UzsakymaiLinesTarget.innerHTML = json.html;
+    
             if (json.uzs_Id) {   
                 this.loadTable(json.uzs_Id);
             }
-
-        
             alert(json.message || 'Užsakymas sėkmingai pateiktas!');
         })
         .catch(error => {
             console.error('Klaida:', error);
             alert('Įvyko klaida pateikiant užsakymą.');
+        });
+    }
+    
+    
+
+    pasalinti(event) {
+        event.preventDefault();
+    
+        const uzsId = this.uzsIdTarget.value;
+        const uzeId = this.uzeIdTarget.value;
+    
+        if (!uzeId || !uzsId) {
+            alert("Trūksta ID reikšmių!");
+            return;
+        }
+    
+        if (!confirm("Ar tikrai norite pašalinti šią eilutę?")) {
+            return;
+        }
+    
+        fetch('/uzsakymai/uzsakymo-eilutes/salinti', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                uze_id: uzeId,
+                uzs_id: uzsId
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Tinklo klaida");
+            return response.json();
+        })
+        .then(json => {
+            if (json.success) {
+                alert(json.message || "Eilutė pašalinta!");
+    
+                // Perkraunam lentelę
+                if (json.uzs_Id) {
+                    this.loadTable(json.uzs_Id);
+                }
+    
+                // Išvalom formos laukus
+                this.uzeIdTarget.value = "";
+    
+                // Papildomai gali išvalyti kitus laukus jei reikia
+            } else {
+                alert(json.message || "Nepavyko pašalinti įrašo!");
+            }
+        })
+        .catch(error => {
+            console.error("❌ Klaida šalinant įrašą:", error);
+            alert("Įvyko klaida šalinant įrašą.");
         });
     }
 
@@ -572,45 +623,79 @@ export default class extends Controller {
                     // Užkraunam gaminio tipus
                     this.updateTypes({ target: { value: eilute.gaminys_id } });
     
-                    // Užkraunam mechanizmą
+                    // Užkraunam mechanizmą su delay
                     setTimeout(() => {
                         this.gamtipasSelectTarget.value = eilute.mechanism_id;
                         const event = new Event('change', { bubbles: true });
                         this.gamtipasSelectTarget.dispatchEvent(event);
                     }, 200);
     
-                    // ✅ Laukiam laukų užkrovimo ir tik tada pildom laukus
+                    // Užklausome laukų
                     const laukaiHandler = (e) => {
-                        // Užpildom atitraukimą
                         const atitraukimas = this.element.querySelector('#atitraukimas');
-                        if (atitraukimas) {
-                            atitraukimas.value = eilute.uze_atitraukimo_kaladele;
-                        }
+                        if (atitraukimas) atitraukimas.value = eilute.uze_atitraukimo_kaladele;
+    
                         const vyriai = this.element.querySelector('#vyriai');
-                        if (vyriai) {
-                            vyriai.value = eilute.uze_vyriai;
-                        }
+                        if (vyriai) vyriai.value = eilute.uze_vyriai;
+    
                         const productColor = this.element.querySelector('#productColor');
-                        if (productColor) {
-                            productColor.value = eilute.uze_gaminio_spalva_id;
-                        }
-
-                        /*document.querySelector('#materialSelect').dispatchEvent(new CustomEvent('nustatytiReiksme', {
-                            detail: { value: "123", text: "aaa" },
-                            bubbles: true
-                          })); */
-                          
-                          const materialInput = document.querySelector('#materialInput');
-                            if (materialInput) {
+                        if (productColor) productColor.value = eilute.uze_gaminio_spalva_id;
+    
+                        const materialInput = document.querySelector('#materialInput');
+                        if (materialInput) {
                             materialInput.dispatchEvent(new CustomEvent('nustatytiReiksme', {
-                                detail: { value: "123", text: "aaa" },
+                                detail: {
+                                    value: eilute.uze_lameliu_spalva_id,
+                                    text: eilute.uze_lameles_spalva
+                                },
                                 bubbles: true
                             }));
+                        }
+    
+                        const width = this.element.querySelector('#width');
+                        if (width) {
+                            width.value = eilute.uze_gaminio_plotis;
+    
+                            if (eilute.min_width) {
+                                width.setAttribute('data-min-width', parseInt(eilute.min_width));
                             }
- 
-                     
-        
-        this.element.removeEventListener('laukaiLoaded', laukaiHandler);
+                            if (eilute.max_warranty_width) {
+                                width.setAttribute('data-max-width', parseInt(eilute.max_warranty_width));
+                            }
+                        }
+    
+                        const heigth = this.element.querySelector('#heigth');
+                        if (heigth) heigth.value = eilute.uze_gaminio_aukstis;
+    
+                        const medzwidth = this.element.querySelector('#medzwidth');
+                        if (medzwidth) medzwidth.value = eilute.uze_medziagos_plotis;
+    
+                        const medzheigth = this.element.querySelector('#medzheigth');
+                        if (medzheigth) medzheigth.value = eilute.uze_medziagos_aukstis;
+    
+                        const valdymas = this.element.querySelector('#valdymas');
+                        if (valdymas) valdymas.value = eilute.uze_valdymas_puse;
+    
+                        const stabdymas = this.element.querySelector('#stabdymas');
+                        if (stabdymas) stabdymas.value = eilute.uze_stabdymo_mechanizmas;
+    
+                        const comments = this.element.querySelector('#comments');
+                        if (comments) comments.value = eilute.uze_komentarai_gamybai ?? '';
+    
+                        // ✅ Gam. pločio sutikimo checkbox pažymėjimas
+                        const agree = document.getElementById('agree');
+                        const disagree = document.getElementById('disagree');
+                        const widthWarning = document.getElementById('widthWarning');
+    
+                        if (eilute.uze_gam_plocio_sutikimas === 'T') {
+                            if (agree) agree.checked = true;
+                            if (widthWarning) widthWarning.classList.remove('d-none');
+                        } else if (eilute.uze_gam_plocio_sutikimas === 'N') {
+                            if (disagree) disagree.checked = true;
+                            if (widthWarning) widthWarning.classList.remove('d-none');
+                        }
+    
+                        this.element.removeEventListener('laukaiLoaded', laukaiHandler);
                     };
     
                     this.element.addEventListener('laukaiLoaded', laukaiHandler);
@@ -623,6 +708,7 @@ export default class extends Controller {
                 console.error('Klaida gaunant eilutę:', error);
             });
     }
+    
 
    
 }
