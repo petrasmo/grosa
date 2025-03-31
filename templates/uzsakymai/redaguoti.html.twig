@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% import 'macros/form_macros.twig' as form %}
 
 {% block body %}
 
@@ -11,7 +12,32 @@
     data-atributai-target="formContainer">
 <input type="hidden" id="uzs_id" name="uzs_id" value="{{ uzs_id }}" data-atributai-target="uzsId">
 
+<div class="row mb-3">
+    <div class="col-md-3">
+        <label for="uzs_nr" class="form-label">Užsakymo numeris</label>
+        <input type="text" class="form-control" id="uzs_nr" name="uzs_nr" value="{{uzs_nr}}">        
+    </div>
 
+    <div class="col-md-3">
+        <label for="uzs_pristatymas" class="form-label">Pristatymas</label>
+        <select class="form-select" id="uzs_pristatymas" name="uzs_pristatymas" required>
+            <option value="" disabled {% if uzs_pristatymas is not defined or uzs_pristatymas == '' %}selected{% endif %}>Pasirinkite</option>
+            <option value="S" {% if uzs_pristatymas == 'S' %}selected{% endif %}>Su pristatymu</option>
+            <option value="A" {% if uzs_pristatymas == 'A' %}selected{% endif %}>Atsiėmimas gamykloje</option>
+        </select>
+        <div class="invalid-feedback">Pasirinkite pristatymo būdą.</div>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Kaina be PVM</label>
+        <p class="form-control-plaintext fw-bold text-dark" id="kaina_be_pvm">0.00 €</p>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Kaina su PVM</label>
+        <p class="form-control-plaintext fw-bold text-dark" id="kaina_su_pvm">0.00 €</p>
+    </div>
+</div>
 
 
 <div id="my-table-container" style="display:none;">
@@ -108,251 +134,103 @@
     </div>
 
     <div class="row mb-3">
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">    
-            <label for="width" class="form-label">Gaminio plotis</label>
-            <div class="input-group">
-                <input type="number" class="form-control" id="width" name="width" required
-                    onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
-                    data-min-width=""  
-                    data-max-width=""
-                    onblur="validateWidth(this);">
-                <span class="input-group-text">mm</span>
-            </div>
-
-            <div id="width-error-message" class="invalid-feedback d-none"></div>
-
-            <div id="widthWarning" class="alert alert-warning d-none">
-                <label class="form-label fw-bold text-danger small">
-                    ⚠️ Maksimalus gaminio plotis: Platesniam garantija nesuteikiama.
-                </label>
-                <div>
-                    <input type="radio" id="agree" name="width_agreement" value="T" required>
-                    <label for="agree">Sutinku</label>
-                </div>
-                <div>
-                    <input type="radio" id="disagree" name="width_agreement" value="N" required>
-                    <label for="disagree">Nesutinku</label>
-                </div>
-                <div id="widthWarningError" class="text-warning d-none">⚠️ Turite pasirinkti vieną iš variantų!</div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="medzwidth" class="form-label">Medžiagos plotis</label>
-            <div class="input-group">
-                <input type="number" class="form-control" id="medzwidth" name="medzwidth" required
-                    onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"               
-                    onblur="validateMedzwidth(this);">
-                <span class="input-group-text">mm</span>
-            </div>
-            <div id="medzwidth-error-message" class="invalid-feedback d-none"></div>
-        </div>
-
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="heigth" class="form-label">Gaminio aukštis</label>
-            <div class="input-group">
-                <input type="number" class="form-control" id="heigth" name="heigth" required
-                    onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
-                    onblur="validateinput(this);"              
-                >
-                <span class="input-group-text">mm</span>
-            </div>
-            <div id="heigth-error-message" class="invalid-feedback d-none"></div>
-        </div>
-
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="medzheigth" class="form-label">Medžiagos aukštis</label>
-            <div class="input-group">
-                <input type="number" class="form-control" id="medzheigth" name="medzheigth" required
-                    onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"  
-                    onblur="validateinput(this);"           
-                >
-                <span class="input-group-text">mm</span>
-            </div>
-            <div id="hemedzheigth-error-message" class="invalid-feedback d-none"></div>
-        </div>
+        {{ form.widthInputWithAgreement() }}
+        {{ form.numberInput('medzwidth', 'medzwidth', 'Medžiagos plotis', true, 'validateMedzwidth', 'medzwidth-error-message') }}
+        {{ form.numberInput('heigth', 'heigth', 'Gaminio aukštis', true, 'validateinput', 'heigth-error-message') }}
+        {{ form.numberInput('medzheigth', 'medzheigth', 'Medžiagos aukštis', true, 'validateinput', 'medzheigth-error-message') }}
     </div>
 
     <div class="d-flex flex-wrap">
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="valdymas" class="form-label">Valdymas</label>
-            <select class="form-select" id="valdymas" name="valdymas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="K">Kairė</option>
-                <option value="D">Dešinė</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite valdymo kryptį.</div>
-        </div>
+        {{ form.selectInput('valdymas', 'valdymas', 'Valdymas', [
+    { value: 'K', label: 'Kairė' },
+    { value: 'D', label: 'Dešinė' }
+    ], 'Pasirinkite valdymo kryptį.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="stabdymas" class="form-label">Stabdymo mechanizmas</label>
-            <select class="form-select" id="stabdymas" name="stabdymas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="P">Reikia</option>
-                <option value="J">Nereikia</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite stabdymo mechanizmą.</div>
-        </div>
+    {{ form.selectInput('stabdymas', 'stabdymas', 'Stabdymo mechanizmas', [
+        { value: 'P', label: 'Reikia' },
+        { value: 'J', label: 'Nereikia' }
+    ], 'Pasirinkite stabdymo mechanizmą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="atitraukimas" class="form-label">Atitraukimo kaladėlė</label>
-            <select class="form-select" id="atitraukimas" name="atitraukimas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite atitraukimo kaladėlę.</div>
-        </div>
+    {{ form.selectInput('atitraukimas', 'atitraukimas', 'Atitraukimo kaladėlė', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite atitraukimo kaladėlę.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="montavimasi" class="form-label">Montavimo vieta</label>
-            <select class="form-select" id="montavimasi" name="montavimasi" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="S">Prie stiklo</option>
-                <option value="R">Ant lango rėmo</option>
-                <option value="L">Į lubas</option>
-                <option value="N">Virš nišos</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite montavimo vietą.</div>
-        </div>
+    {{ form.selectInput('montavimasi', 'montavimasi', 'Montavimo vieta', [
+        { value: 'S', label: 'Prie stiklo' },
+        { value: 'R', label: 'Ant lango rėmo' },
+        { value: 'L', label: 'Į lubas' },
+        { value: 'N', label: 'Virš nišos' }
+    ], 'Pasirinkite montavimo vietą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="valoitempimas" class="form-label">Valo įtempimas</label>
-            <select class="form-select" id="valoitempimas" name="valoitempimas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite valo įtempimą.</div>
-        </div>
+    {{ form.selectInput('valoitempimas', 'valoitempimas', 'Valo įtempimas', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite valo įtempimą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="approfiliofiks" class="form-label">Ap. prof. fiksacija</label>
-            <select class="form-select" id="approfiliofiks" name="approfiliofiks" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite ap. profilio fiksacija.</div>
-        </div>
+    {{ form.selectInput('approfiliofiks', 'approfiliofiks', 'Ap. prof. fiksacija', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite ap. profilio fiksaciją.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="valdymotipas" class="form-label">Valdymo tipas</label>
-            <select class="form-select" id="valdymotipas" name="valdymotipas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="V">Virvele</option>
-                <option value="P">Pagaliuku</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite valdymo tipą.</div>
-        </div>
+    {{ form.selectInput('valdymotipas', 'valdymotipas', 'Valdymo tipas', [
+        { value: 'V', label: 'Virvelė' },
+        { value: 'P', label: 'Pagaliuku' }
+    ], 'Pasirinkite valdymo tipą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="karnyzoapdaila" class="form-label">Karnyzo med. apdaila</label>
-            <select class="form-select" id="karnyzoapdaila" name="karnyzoapdaila" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="V">Tiesi apdaila</option>
-                <option value="P">Apdaila kairėje</option>
-                <option value="V">Apdaila dešinėje</option>
-                <option value="P">Apdaila abiejose pusėse</option>
-                <option value="P">Be karnyzo</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite karnyzo med. apdailą.</div>
-        </div>
+    {{ form.selectInput('karnyzoapdaila', 'karnyzoapdaila', 'Karnyzo med. apdaila', [
+        { value: 'V', label: 'Tiesi apdaila' },
+        { value: 'P', label: 'Apdaila kairėje' },
+        { value: 'D', label: 'Apdaila dešinėje' },
+        { value: 'B', label: 'Apdaila abiejose pusėse' },
+        { value: 'N', label: 'Be karnyzo' }
+    ], 'Pasirinkite karnyzo med. apdailą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="karnyzodangtelis" class="form-label">Karnyzo dangtelis</label>
-            <select class="form-select" id="karnyzodangtelis" name="karnyzodangtelis" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite karnyzo dangtelį.</div>
-        </div>
+    {{ form.selectInput('karnyzodangtelis', 'karnyzodangtelis', 'Karnyzo dangtelis', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite karnyzo dangtelį.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="juostelineskopeteles" class="form-label">Juostelinės kopetėlės</label>
-            <select class="form-select" id="juostelineskopeteles" name="juostelineskopeteles" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite juostelines kopetėles.</div>
-        </div>
+    {{ form.selectInput('juostelineskopeteles', 'juostelineskopeteles', 'Juostelinės kopetėlės', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite juostelines kopetėles.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="nukreipiamiejitrosai" class="form-label">Nukreipiamieji trosai</label>
-            <select class="form-select" id="nukreipiamiejitrosai" name="nukreipiamiejitrosai" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite nukreipiamuosius trosus.</div>
-        </div>
+    {{ form.selectInput('nukreipiamiejitrosai', 'nukreipiamiejitrosai', 'Nukreipiamieji trosai', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite nukreipiamuosius trosus.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="lamelkrastdazymas" class="form-label">Lamelių kraštų dažymas</label>
-            <select class="form-select" id="lamelkrastdazymas" name="lamelkrastdazymas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite lamelių kraštų dažymą.</div>
-        </div>
+    {{ form.selectInput('lamelkrastdazymas', 'lamelkrastdazymas', 'Lamelių kraštų dažymas', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite lamelių kraštų dažymą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="tipas" class="form-label">Tipas</label>
-            <select class="form-select" id="tipas" name="tipas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="P">Premium</option>
-                <option value="S">Standart</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite tipą.</div>
-        </div>
+    {{ form.selectInput('tipas', 'tipas', 'Tipas', [
+        { value: 'P', label: 'Premium' },
+        { value: 'S', label: 'Standart' }
+    ], 'Pasirinkite tipą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="kreipianciosios" class="form-label">Kreipiančiosios</label>
-            <select class="form-select" id="kreipianciosios" name="kreipianciosios" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="33">33 mm.</option>
-                <option value="P">Plačios</option>
-                <option value="PS">pusapvalėm stiklajuostėm</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite kreipiančiasias.</div>
-        </div>
+    {{ form.selectInput('kreipianciosios', 'kreipianciosios', 'Kreipiančiosios', [
+        { value: '33', label: '33 mm.' },
+        { value: 'P', label: 'Plačios' },
+        { value: 'PS', label: 'pusapvalėm stiklajuostėm' }
+    ], 'Pasirinkite kreipiančiasias.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="medpasunkimas" class="form-label">Medžiagos pasunkimas</label>
-            <select class="form-select" id="medpasunkimas" name="medpasunkimas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="T">Taip</option>
-                <option value="N">Ne</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite medžiagos pasunkimą.</div>
-        </div>
-    
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="strypas" class="form-label">Strypas</label>
-            <select class="form-select" id="strypas" name="strypas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="10">10 mm.</option>
-                <option value="8">8 mm.</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite strypą.</div>
-        </div>
+    {{ form.selectInput('medpasunkimas', 'medpasunkimas', 'Medžiagos pasunkimas', [
+        { value: 'T', label: 'Taip' },
+        { value: 'N', label: 'Ne' }
+    ], 'Pasirinkite medžiagos pasunkimą.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="rankenospuse" class="form-label">Rrankenos pusė</label>
-            <select class="form-select" id="rankenospuse" name="rankenospuse" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="K">Keirėje</option>
-                <option value="D">Dešinėje</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite rankenos pusę.</div>
-        </div>
+    {{ form.selectInput('strypas', 'strypas', 'Strypas', [
+        { value: '10', label: '10 mm.' },
+        { value: '8', label: '8 mm.' }
+    ], 'Pasirinkite strypą.') }}
+
+    {{ form.selectInput('rankenospuse', 'rankenospuse', 'Rankenos pusė', [
+        { value: 'K', label: 'Kairėje' },
+        { value: 'D', label: 'Dešinėje' }
+    ], 'Pasirinkite rankenos pusę.') }}
     
         <div class="col-md-3 mb-3 toggle-field" style="display: none;">
             <label for="Skersinis" class="form-label">Skersinis</label>
@@ -367,33 +245,17 @@
             </div>
         </div>      
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;" >
-            <label for="vyriai" class="form-label">Vyriai</label>
-            <select class="form-select" id="vyriai" name="vyriai" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="P">Premium</option>
-                <option value="S">Standart</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite vyrius.</div>
-        </div>
+        {{ form.selectInput('vyriai', 'vyriai', 'Vyriai', [
+            { value: 'P', label: 'Premium' },
+            { value: 'S', label: 'Standart' }
+        ], 'Pasirinkite vyrius.') }}
 
-        <div class="col-md-3 mb-3 toggle-field" style="display: none;">
-            <label for="uzdarymotipas" class="form-label">Uždarymo tipas</label>
-            <select class="form-select" id="uzdarymotipas" name="uzdarymotipas" onblur="validateinput(this);" required>
-                <option value="" selected disabled>Pasirinkite</option>
-                <option value="P">Magnetiniai pritraukjėjai</option>
-                <option value="J">Magnetinė juosta</option>
-            </select>
-            <div class="invalid-feedback">Pasirinkite uždarymo tipą.</div>
-        </div>
-    </div>
-        <div class="row mb-3 ">
-            <div class="col-md-12 mb-3 toggle-field" style="display: none;">
-                <label for="comments" class="form-label">Komentarai gamybai</label>
-                <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Įrašykite komentarus..." ></textarea>
-                <div class="invalid-feedback">Komentarai gamybai</div>
-            </div>
-        </div>
+        {{ form.selectInput('uzdarymotipas', 'uzdarymotipas', 'Uždarymo tipas', [
+            { value: 'P', label: 'Magnetiniai pritraukjėjai' },
+            { value: 'J', label: 'Magnetinė juosta' }
+        ], 'Pasirinkite uždarymo tipą.') }}
+    
+        {{ form.textareaInput('comments', 'comments', 'Komentarai gamybai', 'Įrašykite komentarus...', 'Komentarai gamybai') }}
 
    
     
@@ -402,13 +264,8 @@
    
                        
 <div class="d-flex justify-content-between">
-    <button type="button" class="btn btn-success btn-lg" data-action="click->atributai#issaugoti">
-        Išsaugoti
-    </button>
-    
-    <button type="button" class="btn btn-danger btn-lg" data-action="click->atributai#pasalinti">
-        Pašalinti
-    </button>
+    {{ form.saveButton('atributai#issaugoti') }}
+    {{ form.deleteButton('atributai#pasalinti') }}
 </div>
 
 

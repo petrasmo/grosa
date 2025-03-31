@@ -95,7 +95,14 @@ export default class extends Controller {
                 });
             }
 
-            
+            const minWidth = data.minWidth;
+            const maxWidth = data.maxWidth;
+
+            const widthInput = document.getElementById('width');
+            if (widthInput) {
+                widthInput.dataset.minWidth = minWidth;
+                widthInput.dataset.maxWidth = maxWidth;
+            }
     
             // ✅ ČIA KVIETI CUSTOM EVENT!
             const laukaiLoadedEvent = new CustomEvent('laukaiLoaded', {
@@ -373,7 +380,7 @@ export default class extends Controller {
         }
     }
 
-    setupWidthField() {
+    /*setupWidthField() {
         const widthField = this.element.querySelector('#width');
         if (!widthField) return;
         widthField.addEventListener('mouseenter', async () => {
@@ -397,7 +404,7 @@ export default class extends Controller {
                 console.error('Klaida užkraunant duomenis:', error);
             }
         });
-    }
+    }*/
     
     
 
@@ -619,7 +626,7 @@ export default class extends Controller {
                     // Užpildom ID laukus
                     this.element.querySelector('#uze_id').value = eilute.uze_id;
                     this.element.querySelector('#gam_id').value = eilute.gaminys_id;
-    
+           
                     // Užkraunam gaminio tipus
                     this.updateTypes({ target: { value: eilute.gaminys_id } });
     
@@ -632,6 +639,8 @@ export default class extends Controller {
     
                     // Užklausome laukų
                     const laukaiHandler = (e) => {
+                        
+                        
                         const atitraukimas = this.element.querySelector('#atitraukimas');
                         if (atitraukimas) atitraukimas.value = eilute.uze_atitraukimo_kaladele;
     

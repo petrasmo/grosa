@@ -1,0 +1,86 @@
+{# templates/macros/form_macros.twig #}
+
+{% macro numberInput(id, name, label, required, onblurFunc, errorId) %}
+    <div class="col-md-3 mb-3 toggle-field" style="display: none;">
+        <label for="{{ id }}" class="form-label">{{ label }}</label>
+        <div class="input-group">
+            <input type="number"
+                   class="form-control"
+                   id="{{ id }}"
+                   name="{{ name }}"
+                   {% if required %} required {% endif %}
+                   onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                   onblur="{{ onblurFunc }}(this);">
+            <span class="input-group-text">mm</span>
+        </div>
+        <div id="{{ errorId }}" class="invalid-feedback d-none"></div>
+    </div>
+{% endmacro %}
+
+{# Specialus variantas su sutikimo radijo mygtukais plotis laukui #}
+{% macro widthInputWithAgreement() %}
+    <div class="col-md-3 mb-3 toggle-field" style="display: none;">
+        <label for="width" class="form-label">Gaminio plotis</label>
+        <div class="input-group">
+            <input type="number" class="form-control" id="width" name="width" required
+                   onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"                
+                   data-min-width=""  
+                   data-max-width=""
+                   onblur="validateWidth(this);">
+            <span class="input-group-text">mm</span>
+        </div>
+
+        <div id="width-error-message" class="invalid-feedback d-none"></div>
+
+        <div id="widthWarning" class="alert alert-warning d-none">
+            <label class="form-label fw-bold text-danger small">
+                ⚠️ Maksimalus gaminio plotis: Platesniam garantija nesuteikiama.
+            </label>
+            <div>
+                <input type="radio" id="agree" name="width_agreement" value="T" required>
+                <label for="agree">Sutinku</label>
+            </div>
+            <div>
+                <input type="radio" id="disagree" name="width_agreement" value="N" required>
+                <label for="disagree">Nesutinku</label>
+            </div>
+            <div id="widthWarningError" class="text-warning d-none">⚠️ Turite pasirinkti vieną iš variantų!</div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro selectInput(id, name, label, options, errorMessage) %}
+<div class="col-md-3 mb-3 toggle-field" style="display: none;">
+    <label for="{{ id }}" class="form-label">{{ label }}</label>
+    <select class="form-select" id="{{ id }}" name="{{ name }}" onblur="validateinput(this);" required>
+        <option value="" selected disabled>Pasirinkite</option>
+        {% for option in options %}
+            <option value="{{ option.value }}">{{ option.label }}</option>
+        {% endfor %}
+    </select>
+    <div class="invalid-feedback">{{ errorMessage }}</div>
+</div>
+{% endmacro %}
+
+{% macro textareaInput(id, name, label, placeholder, errorMessage) %}
+    <div class="col-md-12 mb-3 toggle-field" style="display: none;">
+        <label for="{{ id }}" class="form-label">{{ label }}</label>
+        <textarea class="form-control" id="{{ id }}" name="{{ name }}" rows="3" placeholder="{{ placeholder }}"
+                  onblur="validateinput(this);" ></textarea>
+        <div class="invalid-feedback">{{ errorMessage }}</div>
+    </div>
+{% endmacro %}
+
+{% macro saveButton(action = 'atributai#issaugoti') %}
+<button type="button" class="btn btn-success btn-lg" data-action="click->{{ action }}">
+    Išsaugoti
+</button>
+{% endmacro %}
+
+{% macro deleteButton(action = 'atributai#pasalinti') %}
+<button type="button" class="btn btn-danger btn-lg" data-action="click->{{ action }}">
+    Pašalinti
+</button>
+{% endmacro %}
