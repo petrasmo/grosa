@@ -198,7 +198,7 @@ class UzsakymaiRepository
             'p_uzs_nr' => $duomenys['uzs_nr'] ?? null,
             'p_uzs_aprasymas' => '',
             'p_uzs_busena' => 'N',
-            'p_uzs_pristatymas' => 'N',
+            'p_uzs_pristatymas' => $duomenys['uzs_pristatymas'] ?? null,
             'p_uzs_deleted' => 0,
             'p_uze_id_mechanism' => $duomenys['mechanism_id'] ?? null,
             'p_uze_vyriai' => $duomenys['vyriai'] ?? null,

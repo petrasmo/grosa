@@ -454,7 +454,7 @@ export default class extends Controller {
 
     issaugoti(event) {
         let valid = true;
-
+    
     // Surandam visus matomus input, select, textarea laukus
     const inputs = this.element.querySelectorAll('input, select, textarea');
 
@@ -525,12 +525,18 @@ export default class extends Controller {
     
         const uzsIdInput = this.element.querySelector('#uzs_id');
         const uzeIdInput = this.element.querySelector('#uze_id');
+        const uzsnrInput = this.element.querySelector('#uzs_nr');
+        const uzspristatymasInput = this.element.querySelector('#uzs_pristatymas');
+  
+     
     
         const data = {
             gam_id: gam_id,
             mechanism_id: mechanism_id,
             uzs_id: this.uzsIdTarget.value,
             uze_id: this.uzeIdTarget.value,
+            uzs_nr: uzsnrInput?.value, 
+            uzs_pristatymas: uzspristatymasInput?.value,            
             ...papildomiDuomenys
         }
     
@@ -716,6 +722,16 @@ export default class extends Controller {
             .catch(error => {
                 console.error('Klaida gaunant eilutę:', error);
             });
+    }
+
+    naujasGaminys(event) {
+        event.preventDefault();
+        const uzsId = this.uzsIdTarget.value;
+        if (uzsId) {
+            window.location.href = `/uzsakymai/redaguoti?uzs_id=${uzsId}`;
+        } else {
+            window.location.href = `/uzsakymai/redaguoti`;
+        }
     }
     
 
