@@ -122,9 +122,10 @@ class UzsakymaiController extends AbstractController
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Išsaugota sėkmingai!',
+                'message' => 'Ušsakymas sėkmingai išsaugotas',
                 'uzs_Id' => $rez['uzs_Id'],
                 'uze_Id' => $rez['uze_Id'],
+                'uzs_nr' => $rez['uzs_nr']         
             ]);
         } catch (\Exception $e) {
             return new JsonResponse(['success' => false, 'message' => 'Klaida: ' . $e->getMessage()], 500);
@@ -144,7 +145,7 @@ class UzsakymaiController extends AbstractController
                 'user' => $user,
             ]);
 
-            return new JsonResponse(['success' => true, 'message' => 'Užsakymas pašalintas.']);
+            return new JsonResponse(['success' => true, 'message' => 'Užsakymas sėkmingai pašalintas']);
         } catch (\Exception $e) {
             return new JsonResponse(['success' => false, 'message' => 'Klaida: ' . $e->getMessage()], 500);
         }

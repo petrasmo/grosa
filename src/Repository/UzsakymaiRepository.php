@@ -194,21 +194,20 @@ class UzsakymaiRepository
 
     public function issaugotiUzsakymaIrEilute(array $duomenys): array
     {
-        $params = [
-            'p_uzs_nr' => $duomenys['uzs_nr'] ?? null,
+        $params = [            
             'p_uzs_aprasymas' => '',
             'p_uzs_busena' => 'N',
             'p_uzs_pristatymas' => $duomenys['uzs_pristatymas'] ?? null,
             'p_uzs_deleted' => 0,
             'p_uze_id_mechanism' => $duomenys['mechanism_id'] ?? null,
             'p_uze_vyriai' => $duomenys['vyriai'] ?? null,
-            'p_uze_gaminio_spalva_id' => $duomenys['productColor'] ?? null,
-            'p_uze_lameliu_spalva_id' => $duomenys['materialId'] ?? null,
-            'p_uze_gaminio_plotis' => $duomenys['width'] ?? null,
-            'p_uze_medziagos_plotis' => $duomenys['medzwidth'] ?? null,
+            'p_uze_gaminio_spalva_id' => $duomenys['productColor'] !== '' ? $duomenys['productColor'] : null,
+            'p_uze_lameliu_spalva_id' => $duomenys['materialId'] !== '' ? $duomenys['materialId'] : null,
+            'p_uze_gaminio_plotis' => $duomenys['width'] !== '' ? $duomenys['width'] : null,
+            'p_uze_medziagos_plotis' => $duomenys['medzwidth'] !== '' ? $duomenys['medzwidth'] : null,
             'p_uze_gam_plocio_sutikimas' => $duomenys['width_agreement'] ?? null,
-            'p_uze_gaminio_aukstis' => $duomenys['heigth'] ?? null,
-            'p_uze_medziagos_aukstis' => $duomenys['medzheigth'] ?? null,
+            'p_uze_gaminio_aukstis' => $duomenys['heigth'] !== '' ? $duomenys['heigth'] : null,
+            'p_uze_medziagos_aukstis' => $duomenys['medzheigth'] !== '' ? $duomenys['medzheigth'] : null,
             'p_uze_stabdymo_mechanizmas' => $duomenys['stabdymas'] ?? '',
             'p_uze_atitraukimo_kaladele' => $duomenys['atitraukimas'] ?? '',
             'p_uze_montavimas_i' => '',
@@ -233,23 +232,26 @@ class UzsakymaiRepository
         ];
 
         // 1. SET pradines reikšmes
-        $this->db->executeStatement('SET @p_uzs_id = :uzs_id, @p_uze_id = :uze_id', [
+        $this->db->executeStatement('SET @p_uzs_id = :uzs_id, @p_uze_id = :uze_id, @p_uzs_nr = :uzs_nr', [
             'uzs_id' => !empty($duomenys['uzs_id']) ? (int)$duomenys['uzs_id'] : 0,
             'uze_id' => !empty($duomenys['uze_id']) ? (int)$duomenys['uze_id'] : 0,
+            'uzs_nr' => $duomenys['uzs_nr'] ?? '',
         ]);
 
         // 2. CALL
         $placeholders = implode(',', array_map(fn($key) => ':' . $key, array_keys($params)));
-        $sql = "CALL insert_or_update_uzsakymas_and_eilutes(@p_uzs_id, @p_uze_id, $placeholders)";
+        $sql = "CALL insert_or_update_uzsakymas_and_eilutes(@p_uzs_id, @p_uze_id, @p_uzs_nr, $placeholders)";
         $this->db->executeStatement($sql, $params);
 
         // 3. Gauti ID
         $uzs_Id = $this->db->fetchOne("SELECT @p_uzs_id");
         $uze_Id = $this->db->fetchOne("SELECT @p_uze_id");
+        $uzs_Nr = $this->db->fetchOne("SELECT @p_uzs_nr");
 
         return [
             'uzs_Id' => $uzs_Id,
             'uze_Id' => $uze_Id,
+            'uzs_nr' => $uzs_Nr
         ];
     }
 

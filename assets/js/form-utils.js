@@ -54,6 +54,8 @@ window.showMessage = function(message, type) {
 };
 
 
+
+
 window.updateTableRow = function(data) {
     let table = $('#data-table').DataTable();
     let rows = table.rows().nodes();

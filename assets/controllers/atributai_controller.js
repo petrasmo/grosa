@@ -494,12 +494,6 @@ export default class extends Controller {
         return;
     }
 
-
-
-
-
-
-
     
     
         const gam_id = document.getElementById('gam_id')?.value;
@@ -555,15 +549,20 @@ export default class extends Controller {
         .then(json => {
             if (uzsIdInput && json.uzs_Id) uzsIdInput.value = json.uzs_Id;
             if (uzeIdInput && json.uze_Id) uzeIdInput.value = json.uze_Id;
+            const uzsNrInput = document.getElementById('uzs_nr');
+            if (uzsNrInput && json.uzs_nr) {
+                uzsNrInput.value = json.uzs_nr;
+            }
     
             if (json.uzs_Id) {   
                 this.loadTable(json.uzs_Id);
             }
-            alert(json.message || 'Užsakymas sėkmingai pateiktas!');
+           // alert(json.message || 'Užsakymas sėkmingai pateiktas!');
+            this.showMessage(json.message, 'success');
         })
         .catch(error => {
             console.error('Klaida:', error);
-            alert('Įvyko klaida pateikiant užsakymą.');
+            this.showMessage('Įvyko klaida pateikiant užsakymą.', 'danger');
         });
     }
     

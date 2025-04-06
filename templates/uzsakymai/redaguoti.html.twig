@@ -7,7 +7,7 @@
 
 
 
-
+<h4 class="mt-4 mb-2 text-center text-uppercase fw-semibold">Užsakymas</h4>
 <div data-controller="atributai" data-max-width="{{ maxWidth }}" data-min-width="{{ minWidth }}" class="needs-validation" 
     data-atributai-target="formContainer">
 <input type="hidden" id="uzs_id" name="uzs_id" value="{{ uzs_id }}" data-atributai-target="uzsId">
@@ -15,7 +15,7 @@
 <div class="row mb-3">
     <div class="col-md-3">
         <label for="uzs_nr" class="form-label">Užsakymo numeris</label>
-        <input type="text" class="form-control" id="uzs_nr" name="uzs_nr" value="{{uzs_nr}}">        
+        <input type="text" class="form-control" id="uzs_nr" name="uzs_nr" value="{{ uzs_nr ?? '' }}" readonly>        
     </div>
 
     <div class="col-md-3">
@@ -29,17 +29,17 @@
     </div>
 
     <div class="col-md-3">
-        <label class="form-label">Kaina be PVM</label>
+        <label class="form-label">Užsakymo kaina be PVM</label>
         <p class="form-control-plaintext fw-bold text-dark" id="kaina_be_pvm">0.00 €</p>
     </div>
 
     <div class="col-md-3">
-        <label class="form-label">Kaina su PVM</label>
+        <label class="form-label">Užsakymo kaina su PVM</label>
         <p class="form-control-plaintext fw-bold text-dark" id="kaina_su_pvm">0.00 €</p>
     </div>
 </div>
 
-
+<h5 class="mt-4 mb-2 text-center text-uppercase fw-semibold">Užsakomų gaminių sąrašas</h5>
 <div id="my-table-container" style="display:none;">
     <div id="my-table" data-atributai-target="UzsakymaiLines">
         <table class="table table-striped table-bordered">
@@ -158,12 +158,28 @@
         { value: 'N', label: 'Ne' }
     ], 'Pasirinkite atitraukimo kaladėlę.') }}
 
-    {{ form.selectInput('montavimasi', 'montavimasi', 'Montavimo vieta', [
-        { value: 'S', label: 'Prie stiklo' },
-        { value: 'R', label: 'Ant lango rėmo' },
-        { value: 'L', label: 'Į lubas' },
-        { value: 'N', label: 'Virš nišos' }
-    ], 'Pasirinkite montavimo vietą.') }}
+    {{ form.selectInput(
+        'montavimasi',
+        'montavimasi',
+        'Montavimo vieta',
+        [
+            { value: 'S', label: 'Prie stiklo' },
+            { value: 'R', label: 'Ant lango rėmo' },
+            { value: 'L', label: 'Į lubas' },
+            { value: 'N', label: 'Virš nišos' }
+        ],
+        'Pasirinkite montavimo vietą.',
+        { id: 'montavimasi' }   
+    ) }}
+    <div id="montavimoAukstisGroup" class="d-none mt-2">
+        <label for="montavimoAukstis">Įveskite aukštį:</label>
+        <div class="input-group">
+            <input type="number" id="montavimoAukstis" name="montavimo_aukstis" class="form-control"> 
+            <span class="input-group-text">cm</span>
+        </div>
+    </div>
+    
+
 
     {{ form.selectInput('valoitempimas', 'valoitempimas', 'Valo įtempimas', [
         { value: 'T', label: 'Taip' },
@@ -264,7 +280,7 @@
 </div>
 
    
-                       
+ <div id="alert-container" class="alert d-none" role="alert"></div>                      
 <div class="d-flex justify-content-between">
     {{ form.saveButton('atributai#issaugoti') }}
     {{ form.deleteButton('atributai#pasalinti') }}
@@ -274,4 +290,27 @@
     
     
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const select = document.getElementById("montavimasi");
+    const heightGroup = document.getElementById("montavimoAukstisGroup");
+    const heightInput = document.getElementById("montavimoAukstis");
+
+    function checkMontavimas() {
+        if (select.value === "N") {
+            heightGroup.classList.remove("d-none");
+        } else {
+            heightGroup.classList.add("d-none");
+            heightInput.value = "";
+        }
+    }
+
+    select.addEventListener("change", checkMontavimas);
+
+    // jei jau yra parinktas "N", parodyk iškart
+    checkMontavimas();
+});
+</script>
+
 {% endblock %}

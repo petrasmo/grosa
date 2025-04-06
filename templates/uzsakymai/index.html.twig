@@ -4,7 +4,8 @@
 <div class="container mt-4">
     <h2>Užsakymai</h2>
     <button id="new-order" class="btn btn-primary mb-3">Naujas užsakymas</button>
-
+    
+    <div id="alert-message" class="alert d-none" role="alert"></div>  
     <table id="uzsakymaiTable" class="table table-striped">
         <thead>
             <tr>
@@ -28,8 +29,7 @@
                         <a href="{{ path('uzsakymai_redaguoti', {'uzs_id': uzsakymas.uzs_id}) }}" class="btn btn-sm btn-outline-secondary">✏️</a>
                         <button 
                                 class="btn btn-sm btn-outline-danger salinti-uzsakyma" 
-                                data-id="{{ uzsakymas.uzs_id }}"
-                                onclick="return confirm('Ar tikrai norite ištrinti?');">
+                                data-id="{{ uzsakymas.uzs_id }}">
                                  🗑️
                                 </button>
                     </td>
@@ -62,7 +62,9 @@
         .then(response => response.json())
         .then(json => {
             if (json.success) {
-                alert(json.message);
+               // alert('AAAA'+json.message);
+                showMessage(json.message, 'success');
+                
                 // Pašalinam eilutę iš lentelės
                 this.closest('tr').remove();
             } else {
