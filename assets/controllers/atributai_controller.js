@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
     static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
-        "colorSelect","materialSelect", "fields","uzsId","uzeId", "UzsakymaiLines"];
+        "colorSelect","materialSelect", "fields","uzsId","uzeId", "UzsakymaiLines","formFieldsWrapper"];
        /* static values = {
             initialValue: String,
             initialText: String,
@@ -72,6 +72,7 @@ export default class extends Controller {
     }
 
     async updateFields(event) {
+       // alert("🔔 updateFields() buvo iškviesta!");
         const mechanismId = event.target.value;
         if (!mechanismId) return;
         
@@ -515,6 +516,10 @@ export default class extends Controller {
                 papildomiDuomenys[el.name] = el.value;
             }
         });
+        const virsnisosInput = document.getElementById('virsnisoscm');
+        if (virsnisosInput) {
+            papildomiDuomenys['virsnisoscm'] = virsnisosInput.value;
+        }
 
     
         const uzsIdInput = this.element.querySelector('#uzs_id');
@@ -612,7 +617,7 @@ export default class extends Controller {
     
                 // Papildomai gali išvalyti kitus laukus jei reikia
             } else {
-                alert(json.message || "Nepavyko pašalinti įrašo!");
+                alert(json.message || "Nepavyko pašalinti įrašo!"); 
             }
         })
         .catch(error => {
@@ -685,11 +690,27 @@ export default class extends Controller {
                         if (medzwidth) medzwidth.value = eilute.uze_medziagos_plotis;
     
                         const medzheigth = this.element.querySelector('#medzheigth');
-                        if (medzheigth) medzheigth.value = eilute.uze_medziagos_aukstis;
-    
+                        if (medzheigth) medzheigth.value = eilute.uze_medziagos_aukstis;   
+                       
+
                         const valdymas = this.element.querySelector('#valdymas');
                         if (valdymas) valdymas.value = eilute.uze_valdymas_puse;
-    
+
+                        const montavimasi = this.element.querySelector('#montavimasi');
+                        if (montavimasi) montavimasi.value = eilute.uze_montavimas_i;
+                        
+                        const virsnisoscm = this.element.querySelector('#virsnisoscm');
+                        if (montavimasi) virsnisoscm.value = eilute.uze_virsnisos_cm;
+                        
+                        const virsnisoscmGroup = this.element.querySelector('#virsnisoscmGroup');
+                        if (virsnisoscmGroup) {
+                            if (montavimasi.value === 'N') {
+                                virsnisoscmGroup.classList.remove('d-none');
+                            } else {
+                                virsnisoscmGroup.classList.add('d-none');
+                            }
+                        }
+                            
                         const stabdymas = this.element.querySelector('#stabdymas');
                         if (stabdymas) stabdymas.value = eilute.uze_stabdymo_mechanizmas;
     
@@ -725,6 +746,9 @@ export default class extends Controller {
 
     naujasGaminys(event) {
         event.preventDefault();
+        /*if (this.hasFormFieldsWrapperTarget) {
+            this.formFieldsWrapperTarget.style.display = 'block';
+        }*/
         const uzsId = this.uzsIdTarget.value;
         if (uzsId) {
             window.location.href = `/uzsakymai/redaguoti?uzs_id=${uzsId}`;

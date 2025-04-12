@@ -62,6 +62,8 @@
     ➕ Naujas gaminys
 </a>
 
+
+
 <div class="uzsakymo-eilute p-3 mb-4 border rounded">
     <input type="hidden" id="uze_id" name="uze_id" value="{{ uze_id }}" data-atributai-target="uzeId">
 
@@ -144,9 +146,9 @@
 
     <div class="d-flex flex-wrap">
         {{ form.selectInput('valdymas', 'valdymas', 'Valdymas', [
-    { value: 'K', label: 'Kairė' },
-    { value: 'D', label: 'Dešinė' }
-    ], 'Pasirinkite valdymo kryptį.') }}
+        { value: 'K', label: 'Kairė' },
+        { value: 'D', label: 'Dešinė' }
+        ], 'Pasirinkite valdymo kryptį.') }}
 
     {{ form.selectInput('stabdymas', 'stabdymas', 'Stabdymo mechanizmas', [
         { value: 'P', label: 'Reikia' },
@@ -158,7 +160,8 @@
         { value: 'N', label: 'Ne' }
     ], 'Pasirinkite atitraukimo kaladėlę.') }}
 
-    {{ form.selectInput(
+    
+    {{ form.selectInputMontavimasI(
         'montavimasi',
         'montavimasi',
         'Montavimo vieta',
@@ -171,13 +174,10 @@
         'Pasirinkite montavimo vietą.',
         { id: 'montavimasi' }   
     ) }}
-    <div id="montavimoAukstisGroup" class="d-none mt-2">
-        <label for="montavimoAukstis">Įveskite aukštį:</label>
-        <div class="input-group">
-            <input type="number" id="montavimoAukstis" name="montavimo_aukstis" class="form-control"> 
-            <span class="input-group-text">cm</span>
-        </div>
-    </div>
+    
+
+
+    
     
 
 
@@ -291,11 +291,13 @@
     
 </div>
 
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const select = document.getElementById("montavimasi");
-    const heightGroup = document.getElementById("montavimoAukstisGroup");
-    const heightInput = document.getElementById("montavimoAukstis");
+    const heightGroup = document.getElementById("virsnisoscmGroup");
+    const heightInput = document.getElementById("virsnisoscm");
 
     function checkMontavimas() {
         if (select.value === "N") {

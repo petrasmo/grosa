@@ -210,10 +210,11 @@ class UzsakymaiRepository
             'p_uze_medziagos_aukstis' => $duomenys['medzheigth'] !== '' ? $duomenys['medzheigth'] : null,
             'p_uze_stabdymo_mechanizmas' => $duomenys['stabdymas'] ?? '',
             'p_uze_atitraukimo_kaladele' => $duomenys['atitraukimas'] ?? '',
-            'p_uze_montavimas_i' => '',
+            'p_uze_montavimas_i' => $duomenys['montavimasi'] ?? null,
+            'p_uze_virsnisos_cm' => $duomenys['virsnisoscm'] !== '' ? (int)$duomenys['virsnisoscm'] : null,
             'p_uze_valo_itempimas' => '',
             'p_uze_apatinio_prof_fiksacija' => '',
-            'p_uze_valdymas_puse' => $duomenys['valdymas'] ?? '',
+            'p_uze_valdymas_puse' => $duomenys['valdymas'] ?? '',            
             'p_uze_valdymas_tipas' => '',
             'p_uze_karnizo_med_apdaila' => '',
             'p_uze_karnizo_dangtelis' => '',
@@ -318,7 +319,9 @@ class UzsakymaiRepository
                     uze_medziagos_aukstis,
                     uze_stabdymo_mechanizmas,
                     uze_valdymas_puse,
-                    uze_komentarai_gamybai
+                    uze_komentarai_gamybai,
+                    uze_montavimas_i,
+                    uze_virsnisos_cm
                 FROM 
                     uzsakymo_eilutes
                 INNER JOIN uzsakymai ON uzs_id = uze_uzs_id

@@ -263,6 +263,7 @@ function validateinput(input) {
 
 function pasleptiIrIsvalytiLaukus(rodomiLaukai = [], parentDivId = null) {
     // Surandam tėvinį div'ą, jei nurodytas
+   // alert('a');
     let parentDiv = null;
     if (parentDivId) {
         parentDiv = document.getElementById(parentDivId);

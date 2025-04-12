@@ -84,3 +84,24 @@
     Pašalinti
 </button>
 {% endmacro %}
+
+{% macro selectInputMontavimasI(id, name, label, options, errorMessage) %}
+<div id="{{ id }}Wrapper" class="col-md-3 mb-3 toggle-field" style="display: none;">
+    <label for="{{ id }}" class="form-label">{{ label }}</label>
+    <select class="form-select" id="{{ id }}" name="{{ name }}" onblur="validateinput(this);" required>
+        <option value="" selected disabled>Pasirinkite</option>
+        {% for option in options %}
+            <option value="{{ option.value }}">{{ option.label }}</option>
+        {% endfor %}
+    </select>
+    <div class="invalid-feedback">{{ errorMessage }}</div>
+
+    <div id="virsnisoscmGroup" class="d-none mt-2">
+        <div class="input-group">
+            <input type="number" id="virsnisoscm" name="virsnisoscm" class="form-control" placeholder="Įveskite cm">
+            <span class="input-group-text">cm</span>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
