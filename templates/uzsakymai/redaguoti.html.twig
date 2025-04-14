@@ -7,7 +7,12 @@
 
 
 
-<h4 class="mt-4 mb-2 text-center text-uppercase fw-semibold">Užsakymas</h4>
+<div class="position-relative mb-3 text-center">
+    <a href="/uzsakymai" class="btn btn-outline-secondary btn-sm position-absolute start-0 top-0">
+        ← Grįžti į užsakymų sąrašą
+    </a>
+    <h4 class="text-uppercase fw-semibold">Užsakymas</h4>
+</div>
 <div data-controller="atributai" data-max-width="{{ maxWidth }}" data-min-width="{{ minWidth }}" class="needs-validation" 
     data-atributai-target="formContainer">
 <input type="hidden" id="uzs_id" name="uzs_id" value="{{ uzs_id }}" data-atributai-target="uzsId">
@@ -63,11 +68,13 @@
 </a>
 
 
-
+<div class="container-fluid p-0">
+    <div class="p-2 m-0 w-100 border border-secondary-subtle rounded bg-body-tertiary shadow-sm">
 <div class="uzsakymo-eilute p-3 mb-4 border rounded">
     <input type="hidden" id="uze_id" name="uze_id" value="{{ uze_id }}" data-atributai-target="uzeId">
-
-    <div class="row mb-3">
+    <div id="fields" data-atributai-target="fields">
+    
+    <div class="row mb-3 toggle-field" style="display: none;">
         <div class="col-md-6 mb-3">
             <label for="gam_id" class="form-label">Gaminys</label>
             <select id="gam_id" class="form-select fw-bold" name="gam_id" data-atributai-target="select" data-action="change->atributai#updateTypes" required>
@@ -82,7 +89,7 @@
         <div class="col-md-6 mb-3">
             <label for="mechanism_id" class="form-label">Gaminio tipas</label>
             <select class="form-select" id="mechanism_id" data-atributai-target="gamtipasSelect"  
-            data-action="change->atributai#updateFields" required>
+                    required>
                 <option value="" selected disabled>Pasirinkite...</option>
             </select>
             <div class="invalid-feedback">Pasirinkite gaminio tipą.</div>
@@ -90,7 +97,7 @@
     </div>
 
     
-<div id="fields" data-atributai-target="fields">
+
 
    <div class="row mb-3">
         <div class="col-md-6 mb-3 toggle-field" style="display: none;">
@@ -108,24 +115,37 @@
     <label for="materialInput" class="form-label">Lamelių spalva</label>
     <div data-controller="select2" data-select2-mechanism-id-value="0" class="position-relative">
         <!-- Input -->
-        <input type="text" id="materialInput"
+        <input
+            type="text"
+            id="materialInput"
+            name="materialInput"
+            required
             class="form-control"
             data-select2-target="input"
             data-url="/uzsakymai/medziagos-paieska"
             autocomplete="off"
             placeholder="Pradėkite rašyti..."
-            onblur="validateinput(this);">
+            onblur="validateinput(this);"
+        >
+
+        <!-- Klaidos žinutė -->
+        <div class="invalid-feedback">Pasirinkite lamelių spalvą.</div>
+
+        <!-- Pasirinktos reikšmės ID -->
         <input type="hidden" id="materialId" name="materialId">
+
         <!-- Spinner -->
-        <div class="spinner-border text-primary d-none position-absolute top-0 end-0 m-2" role="status"
-            data-select2-target="spinner" style="width: 1.5rem; height: 1.5rem;">
+        <div class="spinner-border text-primary d-none position-absolute top-0 end-0 m-2"
+            role="status"
+            data-select2-target="spinner"
+            style="width: 1.5rem; height: 1.5rem;">
             <span class="visually-hidden">Kraunama...</span>
         </div>
 
         <!-- Dropdown sąrašas -->
-        <ul class="list-group position-absolute w-100 d-none autocomplete-list z-3" 
-            data-select2-target="list"></ul>
-
+        <ul class="list-group position-absolute w-100 d-none autocomplete-list z-3"
+            data-select2-target="list">
+        </ul>
     </div>
 </div>
 
@@ -275,7 +295,7 @@
     
         {{ form.textareaInput('comments', 'comments', 'Komentarai gamybai', 'Įrašykite komentarus...', 'Komentarai gamybai') }}
 
-   
+   <button type="button" onclick="testLaukuValymas(event)">Test</button>
     
 </div>
 
@@ -290,10 +310,23 @@
     
     
 </div>
+</div>
+
+</div>
 
 
 
 <script>
+function testLaukuValymas(event) {
+    const formElement = document.querySelector('[data-controller="atributai"]'); // arba kita forma
+    if (!window.validateVisibleFields(event, formElement)) {
+        console.log("Forma turi klaidų.");
+        return;
+    }
+
+    console.log("Forma teisinga.");
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const select = document.getElementById("montavimasi");
     const heightGroup = document.getElementById("virsnisoscmGroup");

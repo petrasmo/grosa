@@ -196,10 +196,15 @@ class UzsakymaiController extends AbstractController
             return $this->json(['success' => false, 'message' => 'Eilutė nerasta.'], 404);
         }
 
+        $gaminioTipai = $this->uzsakymaiRepository->getgaminiotipai($eilute['gaminys_id']);  
+        $gaminiolaukai = $this->uzsakymaiRepository->getMechanizmoLaukai($eilute['mechanism_id']);
         return $this->json([
             'success' => true,
-            'data' => $eilute
+            'data' => $eilute,
+            'gaminioTipai' => $gaminioTipai,
+            'gaminiolaukai' => $gaminiolaukai
         ]);
+       
     }
     
 

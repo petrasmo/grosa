@@ -5,7 +5,7 @@ export default class extends Controller {
   static values = { mechanismId: Number };
 
   connect() {
-    console.log("✅ SimpleAutocomplete prijungtas");
+    console.log("✅ select2 prijungtas");
 
     this.inputTarget.addEventListener('input', this.onSearch.bind(this));
     this.inputTarget.addEventListener('nustatytiReiksme', this.nustatytiReiksme.bind(this));

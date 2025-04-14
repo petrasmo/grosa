@@ -246,24 +246,22 @@ function showErrorMessage(input, message) {
     }
     
 
-function validateinput(input) {  
-    // Jei laukas tuščias, nereikia rodyti klaidos
-    if (input.value === '') {
-        input.classList.add('is-invalid');
-        input.classList.remove('is-valid');
-        
-    }
-    else{
-        input.classList.remove('is-invalid');
-        input.classList.add('is-valid');
-    }
-    return;
+    function validateinput(input) {  
+        // Praleidžiam komentarų lauką, jei jis neturi required
+        if (!input.required) return;
     
-}
+        if (input.value === '') {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+        }
+    }
 
-function pasleptiIrIsvalytiLaukus(rodomiLaukai = [], parentDivId = null) {
+function pasleptiIrIsvalytiLaukus(rodomiLaukai = [], parentDivId = null, nevalomiLaukai = [],) {
     // Surandam tėvinį div'ą, jei nurodytas
-   // alert('a');
+    
     let parentDiv = null;
     if (parentDivId) {
         parentDiv = document.getElementById(parentDivId);
@@ -274,25 +272,27 @@ function pasleptiIrIsvalytiLaukus(rodomiLaukai = [], parentDivId = null) {
         ? parentDiv.querySelectorAll('.toggle-field')
         : document.querySelectorAll('.toggle-field');
 
-    fields.forEach(el => {
+    fields.forEach(el => {        
         const input = el.querySelector('input, select, textarea');
-        if (input) {            
+        if (input && !nevalomiLaukai.includes(input.id)) {           
             // Išvalom reikšmes
-            if (input.tagName === 'SELECT' && input.tomselect) {
-                input.tomselect.clear();
-            } else if (input.tagName === 'SELECT') {
+            
+            if (input.tagName === 'SELECT') {
                 input.selectedIndex = 0;
             } else {
                 input.value = '';
             }
-        }
 
+            input.classList.remove('is-valid', 'is-invalid', 'border-warning');
+        }
+        
         // Paslepiam
         el.style.display = 'none';
     });
 
     // Atvaizduojam tuos, kurių ID perduoti masyve
     rodomiLaukai.forEach(id => {
+        //alert(id);
         const el = parentDiv
             ? parentDiv.querySelector(`#${id}`)
             : document.getElementById(id);
@@ -300,6 +300,49 @@ function pasleptiIrIsvalytiLaukus(rodomiLaukai = [], parentDivId = null) {
         if (el) {
             el.closest('.toggle-field').style.display = 'block';
         }
+        
+        document.querySelector('#gam_id').closest('.toggle-field').style.display = 'flex';
     });
+ 
+}
+
+window.validateVisibleFields = function(event, element) {
+    let valid = true;
+
+    // Surandam visus matomus input, select, textarea laukus
+    const inputs = element.querySelectorAll('input, select, textarea');
+
+    inputs.forEach(input => {
+        if (input.offsetParent === null || !input.required) 
+            return;
+
+        // Paleidžiam jau egzistuojančias validacijos funkcijas
+        if (input.name === 'medzwidth') {
+            validateMedzwidth(input);
+        } else if (input.name === 'width') {
+            validateWidth(input);
+        } else {
+            validateinput(input);
+        }
+
+        if (input.classList.contains('is-invalid')) {
+            valid = false;
+        }
+    });
+
+    const materialInput = document.getElementById('materialInput');
+    if (materialInput && materialInput.offsetParent !== null) {
+        validateinput(materialInput);
+        if (materialInput.classList.contains('is-invalid')) {
+            valid = false;
+        }
+    }
+
+    if (!valid) {
+        event.preventDefault();
+        event.stopPropagation();       
+    }
+
+    return valid;
 }
 

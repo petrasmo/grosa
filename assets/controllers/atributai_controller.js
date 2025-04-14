@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
     static targets = ["select", "tableBody", "tableContainer", "gamtipas", "gamtipasSelect", 
-        "colorSelect","materialSelect", "fields","uzsId","uzeId", "UzsakymaiLines","formFieldsWrapper"];
+        "colorSelect","materialSelect", "fields","uzsId","uzeId", "UzsakymaiLines"];
        /* static values = {
             initialValue: String,
             initialText: String,
@@ -16,8 +16,7 @@ export default class extends Controller {
            // console.warn("⚠️ Atributai valdiklis jau buvo prijungtas!");
             return;
         }
-        this.element.dataset.initialized = "true";
-        
+        this.element.dataset.initialized = "true";       
           
         if (this.hasUzsIdTarget) {
             const uzsId = this.uzsIdTarget.value;
@@ -30,24 +29,27 @@ export default class extends Controller {
         if (this.hasGamtipasSelectTarget) {
             this.gamtipasSelectTarget.addEventListener('change', (e) => {
                 const mechanismId = e.target.value;
-                const autocompleteElement = document.querySelector('[data-controller="select2"]');
         
+                // Tik jei naudotojo ranka pakeitė – tada kviesk updateFields
+                if (e.isTrusted) {
+                    this.updateFields(e);
+                }
+                
+                // Tavo select2 controllerio atnaujinimas (jei toks yra)
+                const autocompleteElement = document.querySelector('[data-controller="select2"]');
                 if (autocompleteElement) {
                     const autocompleteController = this.application.getControllerForElementAndIdentifier(
                         autocompleteElement,
                         'select2'
                     );
         
-                    console.log('MechanismID:', mechanismId);
-                    console.log('autocompleteController:', autocompleteController);
-        
                     if (autocompleteController) {
                         autocompleteController.mechanismIdValue = mechanismId;
-                        console.log(`✅ Mechanism ID nustatytas: ${mechanismId}`);
-                    } else {
-                        console.warn('⚠️ Nerastas select2 controlleris!');
                     }
                 }
+
+                
+              
             });
         }
 
@@ -71,22 +73,34 @@ export default class extends Controller {
         }
     }
 
-    async updateFields(event) {
-       // alert("🔔 updateFields() buvo iškviesta!");
-        const mechanismId = event.target.value;
-        if (!mechanismId) return;
-        
-        try {
-            const response = await fetch(`/gaminio-laukai/${mechanismId}`);
-            const data = await response.json();
+    async updateFields(dataOrEvent) {
+        let data;
     
-            const laukupavadinimai = Object.values(data.fieldNames);
-            pasleptiIrIsvalytiLaukus(laukupavadinimai);
+        // 1️⃣ Patikrinam ar paduotas objektas yra event'as
+        if (dataOrEvent?.target) {
+            const mechanismId = dataOrEvent.target.value;
+            if (!mechanismId) return;
     
-            // Jei yra spalvų – užkraunam
-            if (laukupavadinimai.includes('productColor')) {
-                const spalvos = data.spalvos;
-                const colorSelect = document.getElementById('productColor');
+            try {
+                const response = await fetch(`/gaminio-laukai/${mechanismId}`);
+                data = await response.json();
+            } catch (error) {
+                console.error("❌ Klaida gaunant laukus:", error);
+                return;
+            }
+        } else {
+            // 2️⃣ Kitaip laikom, kad tai jau paruoštas JSON objektas
+            data = dataOrEvent;
+        }
+    
+        const laukupavadinimai = Object.values(data.fieldNames || {});
+        pasleptiIrIsvalytiLaukus(laukupavadinimai, null, ['gam_id', 'mechanism_id']);
+    
+        // Jei yra spalvų – užkraunam
+        if (laukupavadinimai.includes('productColor') && Array.isArray(data.spalvos)) {
+            const spalvos = data.spalvos;
+            const colorSelect = document.getElementById('productColor');
+            if (colorSelect) {
                 colorSelect.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
                 spalvos.forEach(spalva => {
                     const option = document.createElement('option');
@@ -95,25 +109,22 @@ export default class extends Controller {
                     colorSelect.appendChild(option);
                 });
             }
-
-            const minWidth = data.minWidth;
-            const maxWidth = data.maxWidth;
-
-            const widthInput = document.getElementById('width');
-            if (widthInput) {
-                widthInput.dataset.minWidth = minWidth;
-                widthInput.dataset.maxWidth = maxWidth;
-            }
-    
-            // ✅ ČIA KVIETI CUSTOM EVENT!
-            const laukaiLoadedEvent = new CustomEvent('laukaiLoaded', {
-                bubbles: true
-            });
-            this.element.dispatchEvent(laukaiLoadedEvent); // Iššauni event'ą
-    
-        } catch (error) {
-            console.error("❌ Klaida kraunant laukus:", error);
         }
+    
+        // Pritaikom pločio ribas
+        const minWidth = data.minWidth;
+        const maxWidth = data.maxWidth;
+        const widthInput = document.getElementById('width');
+        if (widthInput) {
+            if (minWidth) widthInput.dataset.minWidth = minWidth;
+            if (maxWidth) widthInput.dataset.maxWidth = maxWidth;
+        }
+    
+        // Signalizuojam kad viskas pakrauta
+        const laukaiLoadedEvent = new CustomEvent('laukaiLoaded', {
+            bubbles: true
+        });
+        this.element.dispatchEvent(laukaiLoadedEvent);
     }
 
     async updateTypes(event) {
@@ -381,36 +392,6 @@ export default class extends Controller {
         }
     }
 
-    /*setupWidthField() {
-        const widthField = this.element.querySelector('#width');
-        if (!widthField) return;
-        widthField.addEventListener('mouseenter', async () => {
-            const gaminioTipasId = this.gamtipasSelectTarget.value;
-            if (!gaminioTipasId) return;
-            try {
-                const response = await fetch(`/gaminio-plotis/${gaminioTipasId}`);
-                const data = await response.json();
-                
-                if (data && data.minWidth && data.maxWidth) {
-                    // Gauti minWidth ir maxWidth
-                    this.minWidth = data.minWidth;
-                    this.maxWidth = data.maxWidth;            
-
-                    widthField.setAttribute('data-min-width', this.minWidth);
-                    widthField.setAttribute('data-max-width', this.maxWidth);
-                    
-                    console.log('Gauti minWidth ir maxWidth:', this.minWidth, this.maxWidth);
-                }
-            } catch (error) {
-                console.error('Klaida užkraunant duomenis:', error);
-            }
-        });
-    }*/
-    
-    
-
-    
-
     showMessage(message, type) {
         let alertContainer = document.getElementById("alert-container");
         if (!alertContainer) {
@@ -429,33 +410,22 @@ export default class extends Controller {
         }, 3000);
     }
 
-    clearFields() {
-        console.log("🧹 Valome laukus...");
-        
-           
+    clearFields() {     
         // Išvalome gaminio spalvą
         if (this.hasColorSelectTarget) {
             this.colorSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
         }
-    
-        // Išvalome medžiagą ir atstatome TomSelect
-       /* if (this.hasMaterialSelectTarget) {
-            console.log("🧹 Valome medžiagos lauką...");
-    
-            if (this.materialSelectTarget.tomselect) {
-                this.materialSelectTarget.tomselect.clear();
-                this.materialSelectTarget.tomselect.clearOptions();
-            }
-    
-            // Nustatome pradinę būseną
-            this.materialSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
-            this.initMaterialSelect();
-        }*/
     }
 
     issaugoti(event) {
-        let valid = true;
-    
+        
+        if (!validateVisibleFields(event, this.element)) {
+            alert('Forma turi klaidų. Patikrinkite laukus.');
+            return;
+        }
+
+
+    /*
     // Surandam visus matomus input, select, textarea laukus
     const inputs = this.element.querySelectorAll('input, select, textarea');
 
@@ -493,7 +463,7 @@ export default class extends Controller {
         event.stopPropagation();
         alert('Forma turi klaidų. Patikrinkite laukus.');
         return;
-    }
+    }*/
 
     
     
@@ -614,6 +584,16 @@ export default class extends Controller {
     
                 // Išvalom formos laukus
                 this.uzeIdTarget.value = "";
+                pasleptiIrIsvalytiLaukus([], null, []);
+                const mechanismSelect = document.getElementById('mechanism_id');
+                if (mechanismSelect) {
+                    mechanismSelect.selectedIndex = 0;
+                    mechanismSelect.classList.remove('is-valid', 'is-invalid', 'border-warning');
+                }
+       
+            if (this.hasUzeIdTarget) {
+                this.uzeIdTarget.value = '';
+            }
     
                 // Papildomai gali išvalyti kitus laukus jei reikia
             } else {
@@ -627,6 +607,7 @@ export default class extends Controller {
     }
 
     loadEilute(uzeId) {
+        
         fetch(`/uzsakymai/uzsakymo-eilutes/redaguoti/${uzeId}`)
             .then(response => response.json())
             .then(data => {
@@ -637,19 +618,30 @@ export default class extends Controller {
                     this.element.querySelector('#uze_id').value = eilute.uze_id;
                     this.element.querySelector('#gam_id').value = eilute.gaminys_id;
            
-                    // Užkraunam gaminio tipus
-                    this.updateTypes({ target: { value: eilute.gaminys_id } });
+                    // Užkraunam gaminio tipus aaaaaa
+                    //this.updateTypes({ target: { value: eilute.gaminys_id } });
+                    this.setGaminioTipaiFromJson(data.gaminioTipai);
+                    
+                    
     
                     // Užkraunam mechanizmą su delay
-                    setTimeout(() => {
+                    /*setTimeout(() => {
                         this.gamtipasSelectTarget.value = eilute.mechanism_id;
                         const event = new Event('change', { bubbles: true });
                         this.gamtipasSelectTarget.dispatchEvent(event);
+                    }, 200);*/
+                    setTimeout(() => {
+                    this.updateFields(data.gaminiolaukai);
                     }, 200);
-    
+
+
                     // Užklausome laukų
                     const laukaiHandler = (e) => {
-                        
+                       
+                        const gam_id = this.element.querySelector('#gam_id');
+                        gam_id.value = eilute.gaminys_id;
+
+                        this.gamtipasSelectTarget.value = eilute.mechanism_id;
                         
                         const atitraukimas = this.element.querySelector('#atitraukimas');
                         if (atitraukimas) atitraukimas.value = eilute.uze_atitraukimo_kaladele;
@@ -734,6 +726,17 @@ export default class extends Controller {
                     };
     
                     this.element.addEventListener('laukaiLoaded', laukaiHandler);
+
+                    
+                        // Susirandam select2 elementą
+                        const select2El = document.querySelector('[data-controller="select2"]');
+                        if (select2El) {
+                          const select2Controller = this.application.getControllerForElementAndIdentifier(select2El, 'select2');
+                          if (select2Controller) {
+                            select2Controller.mechanismIdValue = eilute.mechanism_id;
+                          }
+                        }
+                     
     
                 } else {
                     alert('Nepavyko gauti duomenų.');
@@ -742,6 +745,7 @@ export default class extends Controller {
             .catch(error => {
                 console.error('Klaida gaunant eilutę:', error);
             });
+            
     }
 
     naujasGaminys(event) {
@@ -749,13 +753,48 @@ export default class extends Controller {
         /*if (this.hasFormFieldsWrapperTarget) {
             this.formFieldsWrapperTarget.style.display = 'block';
         }*/
-        const uzsId = this.uzsIdTarget.value;
+        pasleptiIrIsvalytiLaukus(['gam_id', 'mechanism_id'], null, []);
+        const mechanismSelect = document.getElementById('mechanism_id');
+        if (mechanismSelect) {
+            mechanismSelect.selectedIndex = 0;
+            mechanismSelect.classList.remove('is-valid', 'is-invalid', 'border-warning');
+        }
+        /*const uzsId = this.uzsIdTarget.value;
         if (uzsId) {
             window.location.href = `/uzsakymai/redaguoti?uzs_id=${uzsId}`;
         } else {
             window.location.href = `/uzsakymai/redaguoti`;
-        }
+        }*/
+            if (this.hasUzeIdTarget) {
+                this.uzeIdTarget.value = '';
+            }
     }
+
+    setGaminioTipaiFromJson(jsonArray) {
+        if (!Array.isArray(jsonArray) || !this.hasGamtipasSelectTarget) {
+            console.warn("❗ JSON nėra masyvas arba nerastas gamtipasSelect target");
+            return;
+        }
+    
+        this.clearFields(); // Jei nori viską išvalyti prieš įkrovimą
+    
+        // Išvalom esamus pasirinkimus
+        this.gamtipasSelectTarget.innerHTML = '<option value="" selected disabled>Pasirinkite...</option>';
+    
+        jsonArray.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.text;
+    
+            // Jei reikia, gali pridėt ir custom atributus:
+            if (item.min_width) option.setAttribute('data-min-width', item.min_width);
+            if (item.max_warranty_width) option.setAttribute('data-max-warranty-width', item.max_warranty_width);
+    
+            this.gamtipasSelectTarget.appendChild(option);
+        });
+    }
+
+    
     
 
    
