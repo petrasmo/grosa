@@ -187,25 +187,40 @@ class UzsakymaiController extends AbstractController
         return $this->json($eilutes);
     }
 
-    #[Route('/uzsakymai/uzsakymo-eilutes/redaguoti/{uzeId}', name: 'uzsakymo_eilute_redaguoti', methods: ['GET'])]
-    public function redaguotiEilute(int $uzeId): JsonResponse
+    #[Route('/uzsakymai/gaminio-kaina', name: 'get_price', methods: ['GET'])]
+    public function getPrice(Request $request, UzsakymaiRepository $repository): JsonResponse
     {
-        $eilute = $this->uzsakymaiRepository->getEiluteById($uzeId);
+        // 1. Gaunam GET parametrus
+        $idProduct = $request->query->get('id_product');
+        $idMechanism = $request->query->get('id_mechanism');
+        $idColor = $request->query->get('id_color');
+        $heigth = (int) $request->query->get('heigth');
+        $width = (int) $request->query->get('width');
 
-        if (!$eilute) {
-            return $this->json(['success' => false, 'message' => 'Eilutė nerasta.'], 404);
+        // 2. Kvietimas į MariaDB procedūrą per repozitoriją
+        $rezultatas = $repository->getPrice([
+            'id_product' => $idProduct,
+            'id_mechanism' => $idMechanism,
+            'id_color' => $idColor,
+            'heigth' => $heigth,
+            'width' => $width,
+        ]);
+
+        // 3. Jei yra klaida – grąžinam su 400 statusu
+        if (!empty($rezultatas['klaida'])) {
+            return $this->json([
+                'klaida' => $rezultatas['klaida'],
+            ], 400);
         }
 
-        $gaminioTipai = $this->uzsakymaiRepository->getgaminiotipai($eilute['gaminys_id']);  
-        $gaminiolaukai = $this->uzsakymaiRepository->getMechanizmoLaukai($eilute['mechanism_id']);
+        // 4. Grąžinam kainas
         return $this->json([
-            'success' => true,
-            'data' => $eilute,
-            'gaminioTipai' => $gaminioTipai,
-            'gaminiolaukai' => $gaminiolaukai
+            'kaina_su_pvm' => $rezultatas['kaina_su_pvm'],
+            'kaina_be_pvm' => $rezultatas['kaina_be_pvm'],
         ]);
-       
     }
+
+    
     
 
 }

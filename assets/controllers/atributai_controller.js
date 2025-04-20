@@ -705,6 +705,14 @@ export default class extends Controller {
                             
                         const stabdymas = this.element.querySelector('#stabdymas');
                         if (stabdymas) stabdymas.value = eilute.uze_stabdymo_mechanizmas;
+
+                        const valoitempimas = this.element.querySelector('#valoitempimas');
+                        if (valoitempimas) valoitempimas.value = eilute.uze_valo_itempimas;
+
+                        const approfiliofiks = this.element.querySelector('#approfiliofiks');
+                        if (approfiliofiks) approfiliofiks.value = eilute.uze_apatinio_prof_fiksacija;
+
+                  
     
                         const comments = this.element.querySelector('#comments');
                         if (comments) comments.value = eilute.uze_komentarai_gamybai ?? '';

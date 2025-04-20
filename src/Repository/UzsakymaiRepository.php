@@ -111,7 +111,7 @@ class UzsakymaiRepository
     public function getgaminiotipai(int $gamId): array
     {
         
-        $query = "SELECT a.id AS id, a.name AS text, a.min_width, a.max_warranty_width 
+        $query = "SELECT a.id AS id, concat(a.id,a.name) AS text, a.min_width, a.max_warranty_width 
                 FROM ord_roller_mechanism a
                 WHERE a.id_product = :gamId 
                 AND a.deleted <> 1 
@@ -127,7 +127,7 @@ class UzsakymaiRepository
             return []; // apsauga
         }
 
-        $sql = "SELECT omm.id_material AS id, m2.wholesale_name AS text
+        $sql = "SELECT omm.id_material AS id, concat(omm.id_material,m2.wholesale_name) AS text
                 FROM ord_material_mechanism omm
                 LEFT JOIN ord_roller_material m ON m.id = omm.id_material
                 LEFT JOIN ord_material_mechanism mm ON mm.id_material = omm.id_material
@@ -212,8 +212,8 @@ class UzsakymaiRepository
             'p_uze_atitraukimo_kaladele' => $duomenys['atitraukimas'] ?? '',
             'p_uze_montavimas_i' => $duomenys['montavimasi'] ?? null,
             'p_uze_virsnisos_cm' => $duomenys['virsnisoscm'] !== '' ? (int)$duomenys['virsnisoscm'] : null,
-            'p_uze_valo_itempimas' => '',
-            'p_uze_apatinio_prof_fiksacija' => '',
+            'p_uze_valo_itempimas' => $duomenys['valoitempimas'] ?? '',
+            'p_uze_apatinio_prof_fiksacija' => $duomenys['approfiliofiks'] ?? '',
             'p_uze_valdymas_puse' => $duomenys['valdymas'] ?? '',            
             'p_uze_valdymas_tipas' => '',
             'p_uze_karnizo_med_apdaila' => '',
@@ -255,6 +255,8 @@ class UzsakymaiRepository
             'uzs_nr' => $uzs_Nr
         ];
     }
+
+
 
     public function salintiEilute(int $uzeId, int $uzsId): bool
     {
@@ -321,7 +323,9 @@ class UzsakymaiRepository
                     uze_valdymas_puse,
                     uze_komentarai_gamybai,
                     uze_montavimas_i,
-                    uze_virsnisos_cm
+                    uze_virsnisos_cm,
+                    uze_valo_itempimas,
+                    uze_apatinio_prof_fiksacija
                 FROM 
                     uzsakymo_eilutes
                 INNER JOIN uzsakymai ON uzs_id = uze_uzs_id
@@ -331,6 +335,39 @@ class UzsakymaiRepository
                 WHERE uze_id = :uzeId";
 
         return $this->db->fetchAssociative($sql, ['uzeId' => $uzeId]) ?: null;
+    }
+
+    public function getPrice(array $duomenys): array
+    {
+        // 1. SET pradinių reikšmių OUT kintamiesiems
+        $this->db->executeStatement('
+            SET @p_kaina_su_pvm = NULL,
+                @p_kaina_be_pvm = NULL,
+                @p_klaida = NULL
+        ');
+
+        // 2. Paruošiam parametrus
+        $params = [
+            'id_product' => $duomenys['id_product'],
+            'id_mechanism' => $duomenys['id_mechanism'],
+            'id_color' => $duomenys['id_color'],
+            'heigth' => $duomenys['heigth'],
+            'width' => $duomenys['width'],
+        ];
+
+        // 3. CALL procedūrą
+        $sql = "CALL get_price(:id_product, :id_mechanism, :id_color, :heigth, :width, @p_kaina_su_pvm, @p_kaina_be_pvm, @p_klaida)";
+        $this->db->executeStatement($sql, $params);
+
+        // 4. Gauti OUT reikšmes
+        $rez = $this->db->fetchAssociative("
+            SELECT
+                @p_kaina_su_pvm AS kaina_su_pvm,
+                @p_kaina_be_pvm AS kaina_be_pvm,
+                @p_klaida AS klaida
+        ");
+
+        return $rez;
     }
 
 
