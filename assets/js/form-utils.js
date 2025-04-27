@@ -93,6 +93,15 @@ function validateWidth(input) {
     const medzwidthField = document.getElementById('medzwidth');
     const medzwidthValue = medzwidthField ? parseInt(medzwidthField.value) : null;
 
+    if (!input.value || input.value.trim() === "") {
+        input.classList.remove('is-valid', 'is-invalid', 'border-warning');
+        hideErrorMessage(widthErrorMessage);
+        widthWarning.classList.add('d-none');
+        agreeRadio.removeAttribute('required');
+        disagreeRadio.removeAttribute('required');
+        return;
+    }
+
     // 🔴 1. Validacija: ar pasirinktas gaminio tipas
     if (!mechanismSelect.value) {
         input.classList.add('is-invalid');
@@ -289,7 +298,10 @@ function pasleptiIrIsvalytiLaukus(rodomiLaukai = [], parentDivId = null, nevalom
         // Paslepiam
         el.style.display = 'none';
     });
-
+    const materialId = document.getElementById('materialId');
+    if (materialId && !nevalomiLaukai.includes('materialId')) {
+        materialId.value = '';
+    }
     // Atvaizduojam tuos, kurių ID perduoti masyve
     rodomiLaukai.forEach(id => {
         //alert(id);

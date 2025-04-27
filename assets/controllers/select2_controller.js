@@ -8,6 +8,7 @@ export default class extends Controller {
     console.log("✅ select2 prijungtas");
 
     this.inputTarget.addEventListener('input', this.onSearch.bind(this));
+    //this.inputTarget.addEventListener('focus', this.onSearch.bind(this)); // <-- nauja
     this.inputTarget.addEventListener('nustatytiReiksme', this.nustatytiReiksme.bind(this));
     document.addEventListener('click', this.outsideClick.bind(this));
   }
@@ -21,7 +22,7 @@ export default class extends Controller {
     const url = this.inputTarget.dataset.url;
     const mechanismId = this.mechanismIdValue;
 
-    if (query.length < 2) {
+    if (!this.mechanismIdValue) {
       this.clearList();
       return;
     }
@@ -70,6 +71,7 @@ export default class extends Controller {
     const hiddenInput = document.getElementById('materialId');
     if (hiddenInput) {
       hiddenInput.value = value;
+      hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
     this.clearList();
     console.log(`✅ Pasirinkta reikšmė: ${value} - ${text}`);

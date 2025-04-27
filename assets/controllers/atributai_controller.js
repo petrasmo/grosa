@@ -16,7 +16,11 @@ export default class extends Controller {
            // console.warn("⚠️ Atributai valdiklis jau buvo prijungtas!");
             return;
         }
-        this.element.dataset.initialized = "true";       
+        this.element.dataset.initialized = "true";   
+        
+        this.element.addEventListener('change', () => this.skaiciuotiKaina());
+      //  this.element.addEventListener('input', () => this.skaiciuotiKaina());
+        
           
         if (this.hasUzsIdTarget) {
             const uzsId = this.uzsIdTarget.value;
@@ -157,8 +161,8 @@ export default class extends Controller {
                 option.textContent = item.text;
                 this.gamtipasSelectTarget.appendChild(option);
             });
-
-          
+            pasleptiIrIsvalytiLaukus(['gam_id', 'mechanism_id'], null, ['gam_id']);
+            
     
         } catch (error) {
             console.error("❌ Klaida kraunant gaminio tipus:", error);
@@ -210,10 +214,10 @@ export default class extends Controller {
             { title: "Užsakymo Nr.", field: "uzs_nr" },
             { title: "Gaminys", field: "gaminys" },
             { title: "Gaminio tipas", field: "gaminio_tipas" },
-            { title: "Būsena", field: "uzs_busena" },
-            { title: "Pristatymas", field: "uzs_pristatymas" },
             { title: "Plotis", field: "uze_gaminio_plotis" },
             { title: "Aukštis", field: "uze_gaminio_aukstis" },
+            { title: "Būsena", field: "uzs_busena" },
+            { title: "Pristatymas", field: "uzs_pristatymas" },            
             {
                 title: "Veiksmai",
                 formatter: (cell) => {
@@ -230,6 +234,7 @@ export default class extends Controller {
                   if (e.target.classList.contains('koreguoti-eilute')) {
                     const uzeId = e.target.getAttribute('data-id');
                     this.loadEilute(uzeId); // Kviesim metodą
+                    
                   }
                 },
               }
@@ -243,54 +248,14 @@ export default class extends Controller {
               table.setData(data);
               tableContainer.style.display = 'block';
             }
+           
           })
           .catch(error => {
             console.error('Klaida kraunant lentelę:', error);
           });
       }
 
-      /*initMaterialSelect() {
-        if (this.materialTomSelect) {
-            this.materialTomSelect.destroy();
-        }
-    
-        this.materialTomSelect = new TomSelect(this.materialSelectTarget, {
-            valueField: "id",
-            labelField: "text",
-            searchField: "text",
-            load: async (query, callback) => {
-                if (query.length < 2) return callback();
-                try {
-                    const response = await fetch(`/uzsakymai/medziagos-paieska?q=${query}`);
-                    const data = await response.json();
-                    callback(data);
-                } catch (error) {
-                    callback();
-                }
-            },
-            placeholder: "Įveskite bent 2 simbolius...",
-            maxOptions: 20
-        });
-    
-        // Blur validacija – perrašyk naudodamas saugomą instance
-        this.materialTomSelect.on('blur', () => {
-            const wrapper = this.materialSelectTarget.parentElement.querySelector('.ts-wrapper');
-    
-            if (this.materialTomSelect.getValue()) {
-                this.materialSelectTarget.classList.remove('is-invalid');
-                wrapper?.classList.remove('is-invalid');
-    
-                this.materialSelectTarget.classList.add('is-valid');
-                wrapper?.classList.add('is-valid');
-            } else {
-                this.materialSelectTarget.classList.remove('is-valid');
-                wrapper?.classList.remove('is-valid');
-    
-                this.materialSelectTarget.classList.add('is-invalid');
-                wrapper?.classList.add('is-invalid');
-            }
-        });
-    }*/
+      
 
     populateTable(data) {
         this.tableBodyTarget.innerHTML = ""; // Išvalome esamus duomenis
@@ -425,47 +390,6 @@ export default class extends Controller {
         }
 
 
-    /*
-    // Surandam visus matomus input, select, textarea laukus
-    const inputs = this.element.querySelectorAll('input, select, textarea');
-
-    inputs.forEach(input => {
-        if (input.offsetParent === null || !input.required) 
-            return;
-
-        // Paleidžiam jau egzistuojančią tavo funkciją
-       
-        if (input.name === 'medzwidth') {
-            validateMedzwidth(input);
-        } else if (input.name === 'width') {
-            validateWidth(input);
-        } else {
-            validateinput(input);
-        }
-
-        // Jei kažkuris laukas turi klasę is-invalid – validacija bloga
-        if (input.classList.contains('is-invalid')) {
-            valid = false;
-        }
-    });
-
-    // Papildomai tikrinam specialius atvejus (pvz. medžiagos input)
-    const materialInput = document.getElementById('materialInput');
-    if (materialInput && materialInput.offsetParent !== null) {
-        validateinput(materialInput);
-        if (materialInput.classList.contains('is-invalid')) {
-            valid = false;
-        }
-    }
-
-    if (!valid) {
-        event.preventDefault();
-        event.stopPropagation();
-        alert('Forma turi klaidų. Patikrinkite laukus.');
-        return;
-    }*/
-
-    
     
         const gam_id = document.getElementById('gam_id')?.value;
         const mechanism_id = document.getElementById('mechanism_id')?.value;
@@ -729,9 +653,11 @@ export default class extends Controller {
                             if (disagree) disagree.checked = true;
                             if (widthWarning) widthWarning.classList.remove('d-none');
                         }
-    
+                        this.skaiciuotiKaina();
+
                         this.element.removeEventListener('laukaiLoaded', laukaiHandler);
                     };
+    
     
                     this.element.addEventListener('laukaiLoaded', laukaiHandler);
 
@@ -744,7 +670,7 @@ export default class extends Controller {
                             select2Controller.mechanismIdValue = eilute.mechanism_id;
                           }
                         }
-                     
+                    
     
                 } else {
                     alert('Nepavyko gauti duomenų.');
@@ -800,6 +726,49 @@ export default class extends Controller {
     
             this.gamtipasSelectTarget.appendChild(option);
         });
+    }
+
+    skaiciuotiKaina() {
+       // alert('a');
+        const id_product = document.getElementById('gam_id')?.value;
+        const id_mechanism = document.getElementById('mechanism_id')?.value;
+        const id_color = document.getElementById('productColor')?.value;
+        const heigth = document.getElementById('heigth')?.value;
+        const width = document.getElementById('width')?.value;
+        const id_material = document.getElementById('materialId')?.value;
+        const tipas = document.getElementById('tipas')?.value;
+    //alert(tipas);
+        /*if (!id_product || !id_mechanism || !id_color || !heigth || !width) {
+            return; // Nevykdom, jei trūksta duomenų
+        }*/
+    //alert('aaaaa');
+        const params = new URLSearchParams({
+            id_product,
+            id_mechanism,
+            id_color,
+            id_material,
+            heigth,
+            width,
+            tipas
+        });
+    
+        fetch(`/uzsakymai/gaminio-kaina?${params.toString()}`)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Atvaizduojame kainas
+                document.getElementById('kaina_gaminio_be_pvm').textContent = parseFloat(data.kaina_be_pvm).toFixed(2);
+                document.getElementById('kaina_gaminio_su_pvm').textContent = parseFloat(data.kaina_su_pvm).toFixed(2);
+            })
+            .catch(error => {
+                console.error("❌ Kainos skaičiavimo klaida:", error?.klaida || error);
+                document.getElementById('kaina_gaminio_be_pvm').textContent = '0.00';
+                document.getElementById('kaina_gaminio_su_pvm').textContent = '0.00';
+            });
     }
 
     

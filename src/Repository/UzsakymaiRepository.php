@@ -111,7 +111,7 @@ class UzsakymaiRepository
     public function getgaminiotipai(int $gamId): array
     {
         
-        $query = "SELECT a.id AS id, concat(a.id,a.name) AS text, a.min_width, a.max_warranty_width 
+        $query = "SELECT a.id AS id, a.name AS text, a.min_width, a.max_warranty_width 
                 FROM ord_roller_mechanism a
                 WHERE a.id_product = :gamId 
                 AND a.deleted <> 1 
@@ -123,28 +123,32 @@ class UzsakymaiRepository
 
     public function ieskotiMedziagu(string $query, int $mechanismId): array
     {
-        if (strlen($query) < 2 || $mechanismId === 0) {
-            return []; // apsauga
+        if ($mechanismId === 0) {
+            return []; // Reikia mechanizmo
         }
 
-        $sql = "SELECT omm.id_material AS id, concat(omm.id_material,m2.wholesale_name) AS text
+        $sql = "SELECT omm.id_material AS id, m2.wholesale_name AS text
                 FROM ord_material_mechanism omm
                 LEFT JOIN ord_roller_material m ON m.id = omm.id_material
                 LEFT JOIN ord_material_mechanism mm ON mm.id_material = omm.id_material
                 LEFT JOIN ord_roller_material m2 ON m2.id = mm.id_material
                 WHERE mm.id_mechanism = :mechanism_id
-                AND m2.wholesale_name LIKE :query
                 AND omm.id_mechanism = :mechanism_id
                 AND mm.deleted = 0
                 AND m2.deleted = 0
-                AND omm.wholesale = 1
-                ORDER BY m2.wholesale_name
-                LIMIT 50";
+                AND omm.wholesale = 1";
 
-        return $this->db->fetchAllAssociative($sql, [
-            'query' => '%' . $query . '%',
-            'mechanism_id' => $mechanismId
-        ]);
+        $params = ['mechanism_id' => $mechanismId];
+
+        // Jeigu įvesta bent 1 simbolis – taikom LIKE
+        if (strlen(trim($query)) >= 1) {
+            $sql .= " AND m2.wholesale_name LIKE :query";
+            $params['query'] = '%' . $query . '%';
+        }
+
+        $sql .= " ORDER BY m2.wholesale_name LIMIT 50";
+
+        return $this->db->fetchAllAssociative($sql, $params);
     }
 
     public function getMechanizmoLaukai(int $mechanismId): array
@@ -341,32 +345,34 @@ class UzsakymaiRepository
     {
         // 1. SET pradinių reikšmių OUT kintamiesiems
         $this->db->executeStatement('
-            SET @p_kaina_su_pvm = NULL,
-                @p_kaina_be_pvm = NULL,
+            SET @p_kaina_be_pvm = NULL,
+                @p_kaina_su_pvm = NULL,
                 @p_klaida = NULL
         ');
 
         // 2. Paruošiam parametrus
-        $params = [
-            'id_product' => $duomenys['id_product'],
-            'id_mechanism' => $duomenys['id_mechanism'],
-            'id_color' => $duomenys['id_color'],
-            'heigth' => $duomenys['heigth'],
-            'width' => $duomenys['width'],
-        ];
+       $params = [
+    'id_product' => $duomenys['id_product'] ?? null,
+    'id_mechanism' => $duomenys['id_mechanism'] ?? null,
+    'id_color' => !empty($duomenys['id_color']) ? (int)$duomenys['id_color'] : null,
+    'id_material' => ($duomenys['id_material'] ?? '') === '' ? null : $duomenys['id_material'],
+    'heigth' => isset($duomenys['heigth']) && $duomenys['heigth'] !== '' ? (int)$duomenys['heigth'] : null,
+    'width'  => isset($duomenys['width']) && $duomenys['width'] !== '' ? (int)$duomenys['width'] : null,
+    'tipas' => !empty($duomenys['tipas']) ? (string)$duomenys['tipas'] : null,
+    ];
 
         // 3. CALL procedūrą
-        $sql = "CALL get_price(:id_product, :id_mechanism, :id_color, :heigth, :width, @p_kaina_su_pvm, @p_kaina_be_pvm, @p_klaida)";
+        $sql = "CALL skaiciuoti_kaina(:id_product, :id_mechanism, :id_color, :id_material,:heigth, :width,:tipas, @p_kaina_be_pvm, @p_kaina_su_pvm,  @p_klaida)";
         $this->db->executeStatement($sql, $params);
 
         // 4. Gauti OUT reikšmes
         $rez = $this->db->fetchAssociative("
             SELECT
-                @p_kaina_su_pvm AS kaina_su_pvm,
                 @p_kaina_be_pvm AS kaina_be_pvm,
+                @p_kaina_su_pvm AS kaina_su_pvm,                
                 @p_klaida AS klaida
         ");
-
+//dd($rez);
         return $rez;
     }
 

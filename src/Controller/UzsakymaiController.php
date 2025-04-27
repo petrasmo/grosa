@@ -187,6 +187,26 @@ class UzsakymaiController extends AbstractController
         return $this->json($eilutes);
     }
 
+    #[Route('/uzsakymai/uzsakymo-eilutes/redaguoti/{uzeId}', name: 'uzsakymo_eilute_redaguoti', methods: ['GET'])]
+    public function redaguotiEilute(int $uzeId): JsonResponse
+    {
+        $eilute = $this->uzsakymaiRepository->getEiluteById($uzeId);
+
+        if (!$eilute) {
+            return $this->json(['success' => false, 'message' => 'Eilutė nerasta.'], 404);
+        }
+
+        $gaminioTipai = $this->uzsakymaiRepository->getgaminiotipai($eilute['gaminys_id']);  
+        $gaminiolaukai = $this->uzsakymaiRepository->getMechanizmoLaukai($eilute['mechanism_id']);
+        return $this->json([
+            'success' => true,
+            'data' => $eilute,
+            'gaminioTipai' => $gaminioTipai,
+            'gaminiolaukai' => $gaminiolaukai
+        ]);
+       
+    }
+
     #[Route('/uzsakymai/gaminio-kaina', name: 'get_price', methods: ['GET'])]
     public function getPrice(Request $request, UzsakymaiRepository $repository): JsonResponse
     {
@@ -196,14 +216,18 @@ class UzsakymaiController extends AbstractController
         $idColor = $request->query->get('id_color');
         $heigth = (int) $request->query->get('heigth');
         $width = (int) $request->query->get('width');
+        $tipas = $request->query->get('tipas');
+        $idMaterial = $request->query->get('id_material');
 
         // 2. Kvietimas į MariaDB procedūrą per repozitoriją
         $rezultatas = $repository->getPrice([
             'id_product' => $idProduct,
             'id_mechanism' => $idMechanism,
             'id_color' => $idColor,
+            'id_material'  => $idMaterial,
             'heigth' => $heigth,
             'width' => $width,
+            'tipas' => $tipas
         ]);
 
         // 3. Jei yra klaida – grąžinam su 400 statusu
