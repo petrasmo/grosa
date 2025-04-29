@@ -80,7 +80,7 @@
             <select id="gam_id" class="form-select fw-bold" name="gam_id" data-atributai-target="select" data-action="change->atributai#updateTypes" required>
                 <option value="" selected disabled>-- Pasirinkite gaminį --</option>
                 {% for gaminys in gaminiai %}
-                    <option value="{{ gaminys.id }}">{{ gaminys.text }}</option>
+                    <option value="{{ gaminys.value }}">{{ gaminys.label }}</option>
                 {% endfor %}
             </select>
             <div class="invalid-feedback">Pasirinkite gaminį.</div>

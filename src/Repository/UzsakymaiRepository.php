@@ -19,7 +19,7 @@ class UzsakymaiRepository
     public function getGaminiai(): array
     {
         $query = "
-            SELECT a.id AS id, a.name AS text
+            SELECT a.id AS value, a.name AS label
             FROM ord_product a           
             WHERE a.deleted <> 1          
             AND a.public = 1 

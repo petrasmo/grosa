@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Repository\KainynasRepository;
+use App\Repository\UzsakymaiRepository;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,10 +13,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class KainynasController extends AbstractController
 {
     private KainynasRepository $kainynasRepository;
+    private UzsakymaiRepository $uzsakymaiRepository;
 
-    public function __construct(KainynasRepository $kainynasRepository)
+    public function __construct(KainynasRepository $kainynasRepository, UzsakymaiRepository $uzsakymaiRepository)
     {
         $this->kainynasRepository = $kainynasRepository;
+        $this->uzsakymaiRepository = $uzsakymaiRepository;
     }
 
     #[Route('/kainynas', name: 'kainynas', methods: ['GET'])]
@@ -38,17 +41,8 @@ class KainynasController extends AbstractController
             'medziaga' => $request->query->get('medziaga', ''),
         ];
 
-       
-
         $rezultatai = $this->kainynasRepository->ieskotiKainu($filters);
-        /*if ($material === '') {
-            // Jei material tuščias, grąžink visus 1000 įrašų
-            $rezultatai = $this->kainynasRepository->gautiVisusIrasaus();
-        } else {
-            // Jei įvesta kažkas, ieškom pagal įvestą reikšmę
-            $rezultatai = $this->kainynasRepository->ieskotiKainu($material);
-        }*/
-
+        
         return new JsonResponse($rezultatai);
     }
 
@@ -77,5 +71,36 @@ class KainynasController extends AbstractController
                 'message' => 'Klaida: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    #[Route('/kainynas/kainu-taisykles', name: 'kainu_taisykles', methods: ['GET'])]
+    public function taisykles(): Response
+    {
+        $gaminiai = $this->uzsakymaiRepository->getGaminiai();
+        $spalvos = [];
+        $gaminio_tipai = [];
+        $medziagos = [];
+
+        return $this->render('kainynas/taisykles.html.twig', [
+            'gaminiai' => $gaminiai,
+            'spalvos' => $spalvos,
+            'gaminio_tipai' => $gaminio_tipai,
+            'medziagos' => $medziagos,
+        ]);
+    }
+
+    #[Route('/kainynas/kainu-taisykles/ieskoti', name: 'kainu_taisykles_ieskoti', methods: ['GET'])]
+    public function ieskotiKainuTaisykliu(Request $request): JsonResponse
+    {        
+        $filters = [
+            'gaminys' => $request->query->get('gaminys', ''),
+            'tipas' => $request->query->get('tipas', ''),
+            'spalva' => $request->query->get('spalva', ''),
+            'medziaga' => $request->query->get('medziaga', ''),
+        ];
+
+        $rezultatai = $this->kainynasRepository->ieskotiKainuTaisykliu($filters);
+        
+        return new JsonResponse($rezultatai);
     }
 }

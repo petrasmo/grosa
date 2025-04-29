@@ -3,6 +3,7 @@ namespace App\Repository;
 
 use Doctrine\DBAL\Connection;
 
+
 class KainynasRepository
 {
     private Connection $db;
@@ -93,5 +94,52 @@ class KainynasRepository
                 'kai_id' => (int)$kainaData['kai_id'],
             ]);
         }
+    }
+
+
+    public function ieskotiKainuTaisykliu(array $filters): array
+    {
+        $sql = "
+            SELECT 
+                kat_id,
+                gaminys,
+                gaminio_tipas,
+                spalva,
+                medziaga,
+                kat_kaina,
+                kat_aprasymas,
+                kat_matavimo_vienetas
+            FROM view_kainu_taisykles a
+            WHERE 1=1
+        ";
+
+        $params = [];
+
+        if (!empty($filters['gaminys'])) {
+            $sql .= " AND REPLACE(UPPER(TRIM(gaminys)), ' ', '') LIKE REPLACE(UPPER(TRIM(:gaminys)), ' ', '')";
+            $params['gaminys'] = '%' . trim($filters['gaminys']) . '%';
+        }
+        if (!empty($filters['tipas'])) {
+            $sql .= " AND REPLACE(UPPER(TRIM(gaminio_tipas)), ' ', '') LIKE REPLACE(UPPER(TRIM(:tipas)), ' ', '')";
+            $params['tipas'] = '%' . trim($filters['tipas']) . '%';
+        }
+        if (!empty($filters['spalva'])) {
+            $sql .= " AND REPLACE(UPPER(TRIM(spalva)), ' ', '') LIKE REPLACE(UPPER(TRIM(:spalva)), ' ', '')";
+            $params['spalva'] = '%' . trim($filters['spalva']) . '%';
+        }
+        if (!empty($filters['medziaga'])) {
+            $sql .= " AND REPLACE(UPPER(TRIM(medziaga)), ' ', '') LIKE REPLACE(UPPER(TRIM(:medziaga)), ' ', '')";
+            $params['medziaga'] = '%' . trim($filters['medziaga']) . '%';
+        }
+
+        $sql .= " ORDER BY gaminys, gaminio_tipas, spalva, medziaga LIMIT 1000";
+
+        $stmt = $this->db->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        return $stmt->executeQuery()->fetchAllAssociative();
     }
 }

@@ -41,9 +41,9 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
     {
         $username = $request->request->get('username', '');
         $password = $request->request->get('password', '');
-
+        //dd( $password); 
         $request->getSession()->set('_security.last_username', $username);
-
+      
         return new Passport(
             new UserBadge($username),
             new CustomCredentials(function ($credentials, $user) {
@@ -52,7 +52,7 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
         
                 // Paruošiame užklausą su slaptažodžio tikrinimu
                 $query = 'SELECT COUNT(*) as count FROM ord_users WHERE username = :username AND password = SHA2(:password, 256) AND deleted = 0 AND status = 1';
-                
+               
                 // Vykdome užklausą per `executeQuery()`, kuris palaiko `fetchAssociative()`
                 $result = $conn->executeQuery($query, [
                     'username' => $user->getUserIdentifier(),
